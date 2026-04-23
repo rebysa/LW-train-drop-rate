@@ -4,98 +4,99 @@
    <meta charset="UTF-8" />
    <title>Estrazione casuale</title>
  <style>
-   body {
-     font-family: 'Segoe UI', sans-serif;
-     text-align: center;
-     padding: 30px;
-     margin: 0;
-     background: linear-gradient(135deg, #0f172a, #1e293b);
-     color: white;
-   }
- 
-   h2 {
-     margin-bottom: 25px;
-     font-size: 28px;
-   }
- 
-   .container {
-     display: flex;
-     justify-content: center;
-     gap: 40px;
-     align-items: stretch;
-     flex-wrap: wrap;
-   }
- 
-   .box {
-     width: 340px;
-     display: flex;
-     flex-direction: column;
-     background: rgba(255, 255, 255, 0.05);
-     border: 1px solid rgba(255, 255, 255, 0.1);
-     padding: 15px;
-     border-radius: 14px;
-     backdrop-filter: blur(10px);
-     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-     transition: transform 0.2s ease;
-   }
- 
-   .box:hover {
-     transform: translateY(-5px);
-   }
- 
-   h3 {
-     text-align: center;
-     margin-bottom: 15px;
-     font-size: 18px;
-   }
- 
-   .row {
-     display: flex;
-     justify-content: space-between;
-     padding: 6px 0;
-     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-     font-size: 14px;
-   }
- 
-   .row:last-child {
-     border-bottom: none;
-   }
- 
-   #result {
-     font-size: 60px;
-     margin: 30px;
-     font-weight: bold;
-     padding: 10px 20px;
-     display: inline-block;
-     background: rgba(255, 255, 255, 0.1);
-     border-radius: 12px;
-     box-shadow: 0 8px 20px rgba(0,0,0,0.3);
-   }
- 
-   button {
-     padding: 14px 30px;
-     cursor: pointer;
-     font-size: 16px;
-     margin-top: 25px;
-     border: none;
-     border-radius: 10px;
-     background: linear-gradient(135deg, #3b82f6, #06b6d4);
-     color: white;
-     font-weight: bold;
-     box-shadow: 0 8px 20px rgba(0,0,0,0.3);
-     transition: transform 0.2s ease, opacity 0.2s ease;
-   }
- 
-   button:hover {
-     transform: scale(1.05);
-     opacity: 0.9;
-   }
- 
-   footer {
-     margin-top: 50px;
-     font-size: 13px;
-     color: rgba(255,255,255,0.6);
-   }
+ body {
+  font-family: 'Segoe UI', sans-serif;
+  text-align: center;
+  padding: 15px;
+  margin: 0;
+  background: linear-gradient(135deg, #0f172a, #1e293b);
+  color: white;
+}
+
+h2 {
+  margin-bottom: 20px;
+  font-size: 22px;
+}
+
+.container {
+  display: flex;
+  flex-direction: column; /* 📱 MOBILE FIRST */
+  gap: 15px;
+  align-items: stretch;
+}
+
+.box {
+  width: 100%; /* full width */
+  display: flex;
+  flex-direction: column;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 12px;
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+}
+
+h3 {
+  text-align: center;
+  margin-bottom: 10px;
+  font-size: 16px;
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  padding: 5px 0;
+  font-size: 13px;
+}
+
+#result {
+  font-size: 40px; /* più piccolo su mobile */
+  margin: 20px 0;
+  font-weight: bold;
+  padding: 10px;
+  display: block;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+
+button {
+  width: 100%; /* 📱 bottone gigante */
+  padding: 16px;
+  font-size: 18px;
+  margin-top: 15px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #3b82f6, #06b6d4);
+  color: white;
+  font-weight: bold;
+}
+
+footer {
+  margin-top: 30px;
+  font-size: 12px;
+  color: rgba(255,255,255,0.6);
+}
+
+/* 💻 Desktop override */
+@media (min-width: 768px) {
+  .container {
+    flex-direction: row;
+    justify-content: center;
+  }
+
+  .box {
+    width: 320px;
+  }
+
+  #result {
+    font-size: 60px;
+  }
+
+  button {
+    width: auto;
+    padding: 14px 30px;
+  }
+}
  </style>
  </head>
  <body>
