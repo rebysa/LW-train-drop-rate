@@ -107,22 +107,6 @@ footer {
     width: 340px;
   }
 }
-.jackpot {
-  color: gold !important;
-  text-shadow: 0 0 20px gold, 0 0 40px orange;
-}
-
-.shake {
-  animation: shake 0.3s;
-}
-
-@keyframes shake {
-  0% { transform: translate(0px, 0px); }
-  25% { transform: translate(2px, -2px); }
-  50% { transform: translate(-2px, 2px); }
-  75% { transform: translate(2px, 2px); }
-  100% { transform: translate(0px, 0px); }
-}
 </style>
 </head>
 
@@ -132,7 +116,7 @@ footer {
 <div class="header">
   <!-- 🔥 metti qui il logo della tua alleanza -->
   <img class="logo" src="https://via.placeholder.com/150" />
-  <div class="title">🔥 [LegX] - Valhalla Gladiators 🔥</div>
+  <div class="title">🔥 LegX - Valhalla Gladiators🔥</div>
 </div>
 
 <!-- ===== CONTENUTO ===== -->
@@ -181,7 +165,7 @@ footer {
 <button onclick="estrai()">🎰 ESTRAI</button>
 
 <footer>
-© 2026 Rebysa - All rights reserved
+© 2026 Rebysa Alliance - Last War Tool
 </footer>
 
 <script>
@@ -211,8 +195,6 @@ function estraiNumero(pesi){
   }
 }
 
-
-
 function estrai(){
   const c = estraiNumero(pesiConducente);
   const v = estraiNumero(pesiVIP);
@@ -224,5 +206,7 @@ function estrai(){
 
   el.innerHTML = `🚆 ${c} &nbsp;&nbsp; 👑 ${v}`;
 }
+</script>
+
 </body>
 </html>
