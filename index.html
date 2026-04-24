@@ -1,219 +1,187 @@
-<!DOCTYPE html>
-<html lang="it">
-<head>
-<meta charset="UTF-8" />
-<title>Simulatore probabilistico</title>
+ <!DOCTYPE html>
 
-<style>
-body {
-  font-family: 'Segoe UI', sans-serif;
-  text-align: center;
-  padding: 15px;
-  margin: 0;
-  background: linear-gradient(135deg, #0f172a, #1e293b);
-  color: white;
+ <html lang="it">  
+ <head>  
+   <meta charset="UTF-8" />  
+   <title>Estrazione casuale</title>  
+ <style>  
+ body {  
+  font-family: 'Segoe UI', sans-serif;  
+  text-align: center;  
+  padding: 15px;  
+  margin: 0;  
+  background: linear-gradient(135deg, #0f172a, #1e293b);  
+  color: white;  
+}  h2 {
+margin-bottom: 20px;
+font-size: 22px;
 }
 
-h2 { margin-bottom: 20px; }
-
 .container {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
+display: flex;
+flex-direction: column; /* 📱 MOBILE FIRST */
+gap: 15px;
+align-items: stretch;
 }
 
 .box {
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.1);
-  padding: 12px;
-  border-radius: 12px;
-  backdrop-filter: blur(10px);
+width: 100%; /* full width */
+display: flex;
+flex-direction: column;
+background: rgba(255, 255, 255, 0.05);
+border: 1px solid rgba(255, 255, 255, 0.1);
+padding: 12px;
+border-radius: 12px;
+backdrop-filter: blur(10px);
+}
+
+h3 {
+text-align: center;
+margin-bottom: 10px;
+font-size: 16px;
 }
 
 .row {
-  display: flex;
-  justify-content: space-between;
-  font-size: 13px;
-  padding: 4px 0;
+display: flex;
+justify-content: space-between;
+padding: 5px 0;
+font-size: 13px;
 }
 
 #result {
-  font-size: 60px;
-  font-weight: bold;
-  margin: 20px 0;
-  padding: 15px;
-  background: rgba(255,255,255,0.1);
-  border-radius: 12px;
-  transition: transform 0.2s ease;
+font-size: 40px; /* più piccolo su mobile */
+margin: 20px 0;
+font-weight: bold;
+padding: 10px;
+display: block;
+background: rgba(255, 255, 255, 0.1);
+border-radius: 10px;
 }
 
 button {
-  width: 100%;
-  padding: 16px;
-  font-size: 18px;
-  border: none;
-  border-radius: 12px;
-  background: linear-gradient(135deg, #3b82f6, #06b6d4);
-  color: white;
-  font-weight: bold;
-  cursor: pointer;
+width: 100%; /* 📱 bottone gigante */
+padding: 16px;
+font-size: 18px;
+margin-top: 15px;
+border: none;
+border-radius: 12px;
+background: linear-gradient(135deg, #3b82f6, #06b6d4);
+color: white;
+font-weight: bold;
 }
 
-#history {
-  margin-top: 20px;
-  font-size: 13px;
-  text-align: left;
-  opacity: 0.8;
-  max-height: 200px;
-  overflow-y: auto;
+footer {
+margin-top: 30px;
+font-size: 12px;
+color: rgba(255,255,255,0.6);
 }
 
-/* desktop */
-@media(min-width:768px){
-  .container { flex-direction: row; justify-content:center; }
-  .box { width: 320px; }
+/* 💻 Desktop override */
+@media (min-width: 768px) {
+.container {
+flex-direction: row;
+justify-content: center;
+}
+
+.box {
+width: 320px;
+}
+
+#result {
+font-size: 60px;
+}
+
+button {
+width: auto;
+padding: 14px 30px;
+}
 }
 </style>
-</head>
 
-<body>
+ </head>  
+ <body>   <h2>🎲 Simulatore probabilistico</h2>   <div class="container">     <!-- 🚆 CONDUCENTE -->     <div class="box">  
+     <h3>🚆 Conducente del treno</h3>  
+     <div class="content">  
+       <div class="row"><b>1</b><span>30%</span></div>  
+       <div class="row"><b>2</b><span>20%</span></div>  
+       <div class="row"><b>3</b><span>10%</span></div>  
+       <div class="row"><b>4</b><span>7%</span></div>  
+       <div class="row"><b>5</b><span>2%</span></div>  
+       <div class="row"><b>6 - 10</b><span>2%</span></div>  
+       <div class="row"><b>11 - 30</b><span>1%</span></div>  
+     </div>  
+   </div>     <!-- 👑 VIP -->     <div class="box">  
+     <h3>👑 VIP</h3>  
+     <div class="content">  <div class="row"><b>1</b><span>11.11%</span></div>  
+   <div class="row"><b>2</b><span>10.37%</span></div>  
+   <div class="row"><b>3</b><span>9.63%</span></div>  
+   <div class="row"><b>4</b><span>8.89%</span></div>  
+   <div class="row"><b>5</b><span>8.15%</span></div>  
+   <div class="row"><b>6</b><span>7.41%</span></div>  
+   <div class="row"><b>7</b><span>6.67%</span></div>  
+   <div class="row"><b>8</b><span>5.93%</span></div>  
+   <div class="row"><b>9</b><span>5.19%</span></div>  
+   <div class="row"><b>10</b><span>4.44%</span></div>  
+   <div class="row"><b>11</b><span>3.70%</span></div>  
+   <div class="row"><b>12</b><span>2.96%</span></div>  
+   <div class="row"><b>13</b><span>2.22%</span></div>  
+   <div class="row"><b>14</b><span>1.48%</span></div>  
+   <div class="row"><b>15</b><span>0.74%</span></div>  
 
-<h2>🎲 Simulatore probabilistico</h2>
+   <div class="row"><b>16 - 30</b><span>0.74% ciascuno</span></div>  
 
-<div class="container">
+ </div>
 
-  <div class="box">
-    <h3>🚆 Conducente</h3>
-    <div id="conducenteBox"></div>
-  </div>
+   </div>   </div>  <button onclick="estrai()">🎰 ESTRAI ENTRAMBI</button>
 
-  <div class="box">
-    <h3>👑 VIP</h3>
-    <div id="vipBox"></div>
-  </div>
-
-</div>
-
-<div id="result">-</div>
-
-<button onclick="estrai()">🎰 ESTRAI</button>
-
-<div id="history"></div>
-
-<script>
-/* =========================
-   CONFIGURAZIONE PESI
-========================= */
-
-const conducenteConfig = [
-  { range: [1], weight: 30 },
-  { range: [2], weight: 20 },
-  { range: [3], weight: 10 },
-  { range: [4], weight: 7 },
-  { range: [5], weight: 2 },
-  { range: [6,10], weight: 2 },
-  { range: [11,30], weight: 1 }
-];
-
-const vipConfig = Array.from({ length: 30 }, (_, i) => {
-  const n = i + 1;
-  if (n <= 15) return { range: [n], weight: 16 - n };
-  return { range: [n], weight: 1 };
-});
-
-/* =========================
-   UTILS
-========================= */
-
-function buildWeights(config) {
-  const arr = [];
-  config.forEach(c => {
-    const [from, to] = c.range.length === 1 ? [c.range[0], c.range[0]] : c.range;
-    for (let i = from; i <= to; i++) {
-      arr.push(c.weight);
-    }
-  });
-  return arr;
-}
-
-function cumulative(p) {
-  const c = [];
-  let s = 0;
-  for (const v of p) {
-    s += v;
-    c.push(s);
-  }
-  return c;
-}
-
-function draw(cum) {
-  const r = Math.random() * cum[cum.length - 1];
-  return cum.findIndex(x => r <= x) + 1;
-}
-
-/* =========================
-   PRECALCOLO
-========================= */
-
-const conducenteWeights = buildWeights(conducenteConfig);
-const vipWeights = buildWeights(vipConfig);
-
-const conducenteCum = cumulative(conducenteWeights);
-const vipCum = cumulative(vipWeights);
-
-/* =========================
-   UI INIT
-========================= */
-
-function renderConfig(id, config) {
-  const el = document.getElementById(id);
-  el.innerHTML = config.map(c => {
-    return `<div class="row"><b>${c.range.join('-')}</b><span>${c.weight}</span></div>`;
-  }).join('');
-}
-
-renderConfig("conducenteBox", conducenteConfig);
-renderConfig("vipBox", vipConfig);
-
-/* =========================
-   STATO
-========================= */
-
-const history = [];
-
-/* =========================
-   ESTRAZIONE
-========================= */
-
-function estrai() {
-  const c = draw(conducenteCum);
-  const v = draw(vipCum);
-
-  const result = document.getElementById("result");
-
-  // effetto slot
-  result.style.transform = "scale(1.15)";
-  setTimeout(() => result.style.transform = "scale(1)", 200);
-
-  result.innerHTML = `🚆 ${c} &nbsp;&nbsp; 👑 ${v}`;
-
-  history.push({ c, v });
-  renderHistory();
-}
-
-/* =========================
-   STORICO
-========================= */
-
-function renderHistory() {
-  const el = document.getElementById("history");
-  el.innerHTML =
-    "<h4>Storico</h4>" +
-    history.slice(-10).map(h =>
-      `🚆 ${h.c} - 👑 ${h.v}`
-    ).join("<br>");
-}
-</script>
-
-</body>
-</html>
+ <div id="result">-</div>   <footer style="margin-top:20px; font-size:13px; color:#888;">  
+   © 2026 Rebysa — All rights reserved  
+ </footer>     <script>  
+   // 🚆 CONDUCENTE  
+   const pesiConducente = [];  
+   for (let i = 1; i <= 30; i++) {  
+     if (i === 1) pesiConducente.push(30);  
+     else if (i === 2) pesiConducente.push(20);  
+     else if (i === 3) pesiConducente.push(10);  
+     else if (i === 4) pesiConducente.push(7);  
+     else if (i === 5) pesiConducente.push(2);  
+     else if (i >= 6 && i <= 10) pesiConducente.push(2);  
+     else pesiConducente.push(1);  
+   }  
+   
+   // 👑 VIP (1–15 decrescente + 16–30 uguali)  
+   const pesiVIP = [];  
+   
+   // 1–15 decrescente  
+   for (let i = 15; i >= 1; i--) {  
+     pesiVIP.push(i);  
+   }  
+   
+   // 16–30 uguali  
+   for (let i = 16; i <= 30; i++) {  
+     pesiVIP.push(1);  
+   }  
+   
+   function estraiNumero(pesi) {  
+     const totale = pesi.reduce((s, p) => s + p, 0);  
+     const r = Math.random() * totale;  
+   
+     let acc = 0;  
+     for (let i = 0; i < pesi.length; i++) {  
+       acc += pesi[i];  
+       if (r <= acc) return i + 1;  
+     }  
+   }  
+  
+    const statsConducente = Array(30).fill(0);  
+let totaleEstrazioni = 0;  
+  
+   function estrai() {  
+     const conducente = estraiNumero(pesiConducente);  
+     const vip = estraiNumero(pesiVIP);  
+   
+     document.getElementById("result").innerHTML =  
+       "🚆 " + conducente + " &nbsp;&nbsp;&nbsp; 👑 " + vip;  
+   }  
+ </script>   </body>  
+ </html>  
