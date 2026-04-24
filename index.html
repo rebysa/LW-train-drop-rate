@@ -1,187 +1,212 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8" />
+<title>Alleanza Last War - Estrazione</title>
 
- <html lang="it">  
- <head>  
-   <meta charset="UTF-8" />  
-   <title>Estrazione casuale</title>  
- <style>  
- body {  
-  font-family: 'Segoe UI', sans-serif;  
-  text-align: center;  
-  padding: 15px;  
-  margin: 0;  
-  background: linear-gradient(135deg, #0f172a, #1e293b);  
-  color: white;  
-}  h2 {
-margin-bottom: 20px;
-font-size: 22px;
+<style>
+body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: radial-gradient(circle at top, #0b1220, #050814);
+  color: white;
+  text-align: center;
 }
 
+/* ===== HEADER ===== */
+.header {
+  padding: 20px 10px;
+}
+
+.logo {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  border: 2px solid #38bdf8;
+  box-shadow: 0 0 20px #38bdf8;
+  object-fit: cover;
+}
+
+.title {
+  font-size: 22px;
+  margin-top: 10px;
+  font-weight: bold;
+  color: #38bdf8;
+}
+
+/* ===== CONTAINER ===== */
 .container {
-display: flex;
-flex-direction: column; /* 📱 MOBILE FIRST */
-gap: 15px;
-align-items: stretch;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  padding: 10px;
 }
 
 .box {
-width: 100%; /* full width */
-display: flex;
-flex-direction: column;
-background: rgba(255, 255, 255, 0.05);
-border: 1px solid rgba(255, 255, 255, 0.1);
-padding: 12px;
-border-radius: 12px;
-backdrop-filter: blur(10px);
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(56,189,248,0.2);
+  border-radius: 16px;
+  padding: 15px;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 0 20px rgba(56,189,248,0.08);
 }
 
 h3 {
-text-align: center;
-margin-bottom: 10px;
-font-size: 16px;
+  margin-bottom: 10px;
+  color: #7dd3fc;
 }
 
 .row {
-display: flex;
-justify-content: space-between;
-padding: 5px 0;
-font-size: 13px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  padding: 4px 0;
+  opacity: 0.9;
 }
 
+/* ===== RESULT ===== */
 #result {
-font-size: 40px; /* più piccolo su mobile */
-margin: 20px 0;
-font-weight: bold;
-padding: 10px;
-display: block;
-background: rgba(255, 255, 255, 0.1);
-border-radius: 10px;
+  font-size: 55px;
+  margin: 25px 0;
+  font-weight: bold;
+  color: #38bdf8;
+  text-shadow: 0 0 15px #38bdf8;
+  transition: transform 0.2s ease;
 }
 
+/* ===== BUTTON ===== */
 button {
-width: 100%; /* 📱 bottone gigante */
-padding: 16px;
-font-size: 18px;
-margin-top: 15px;
-border: none;
-border-radius: 12px;
-background: linear-gradient(135deg, #3b82f6, #06b6d4);
-color: white;
-font-weight: bold;
+  padding: 16px;
+  width: 90%;
+  max-width: 400px;
+  font-size: 18px;
+  border: none;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #38bdf8, #6366f1);
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 0 15px rgba(99,102,241,0.4);
 }
 
+/* ===== FOOTER ===== */
 footer {
-margin-top: 30px;
-font-size: 12px;
-color: rgba(255,255,255,0.6);
+  margin-top: 25px;
+  font-size: 12px;
+  opacity: 0.5;
 }
 
-/* 💻 Desktop override */
-@media (min-width: 768px) {
-.container {
-flex-direction: row;
-justify-content: center;
-}
+/* ===== DESKTOP ===== */
+@media(min-width:768px){
+  .container {
+    flex-direction: row;
+    justify-content: center;
+  }
 
-.box {
-width: 320px;
-}
-
-#result {
-font-size: 60px;
-}
-
-button {
-width: auto;
-padding: 14px 30px;
-}
+  .box {
+    width: 340px;
+  }
 }
 </style>
+</head>
 
- </head>  
- <body>   <h2>🎲 Simulatore probabilistico</h2>   <div class="container">     <!-- 🚆 CONDUCENTE -->     <div class="box">  
-     <h3>🚆 Conducente del treno</h3>  
-     <div class="content">  
-       <div class="row"><b>1</b><span>30%</span></div>  
-       <div class="row"><b>2</b><span>20%</span></div>  
-       <div class="row"><b>3</b><span>10%</span></div>  
-       <div class="row"><b>4</b><span>7%</span></div>  
-       <div class="row"><b>5</b><span>2%</span></div>  
-       <div class="row"><b>6 - 10</b><span>2%</span></div>  
-       <div class="row"><b>11 - 30</b><span>1%</span></div>  
-     </div>  
-   </div>     <!-- 👑 VIP -->     <div class="box">  
-     <h3>👑 VIP</h3>  
-     <div class="content">  <div class="row"><b>1</b><span>11.11%</span></div>  
-   <div class="row"><b>2</b><span>10.37%</span></div>  
-   <div class="row"><b>3</b><span>9.63%</span></div>  
-   <div class="row"><b>4</b><span>8.89%</span></div>  
-   <div class="row"><b>5</b><span>8.15%</span></div>  
-   <div class="row"><b>6</b><span>7.41%</span></div>  
-   <div class="row"><b>7</b><span>6.67%</span></div>  
-   <div class="row"><b>8</b><span>5.93%</span></div>  
-   <div class="row"><b>9</b><span>5.19%</span></div>  
-   <div class="row"><b>10</b><span>4.44%</span></div>  
-   <div class="row"><b>11</b><span>3.70%</span></div>  
-   <div class="row"><b>12</b><span>2.96%</span></div>  
-   <div class="row"><b>13</b><span>2.22%</span></div>  
-   <div class="row"><b>14</b><span>1.48%</span></div>  
-   <div class="row"><b>15</b><span>0.74%</span></div>  
+<body>
 
-   <div class="row"><b>16 - 30</b><span>0.74% ciascuno</span></div>  
+<!-- ===== HEADER ===== -->
+<div class="header">
+  <!-- 🔥 metti qui il logo della tua alleanza -->
+  <img class="logo" src="https://via.placeholder.com/150" />
+  <div class="title">🔥 ALLENZA LAST WAR 🔥</div>
+</div>
 
- </div>
+<!-- ===== CONTENUTO ===== -->
+<div class="container">
 
-   </div>   </div>  <button onclick="estrai()">🎰 ESTRAI ENTRAMBI</button>
+  <div class="box">
+    <h3>🚆 Conducente</h3>
+    <div class="content">
+      <div class="row"><b>1</b><span>30%</span></div>
+      <div class="row"><b>2</b><span>20%</span></div>
+      <div class="row"><b>3</b><span>10%</span></div>
+      <div class="row"><b>4</b><span>7%</span></div>
+      <div class="row"><b>5</b><span>2%</span></div>
+      <div class="row"><b>6-10</b><span>2%</span></div>
+      <div class="row"><b>11-30</b><span>1%</span></div>
+    </div>
+  </div>
 
- <div id="result">-</div>   <footer style="margin-top:20px; font-size:13px; color:#888;">  
-   © 2026 Rebysa — All rights reserved  
- </footer>     <script>  
-   // 🚆 CONDUCENTE  
-   const pesiConducente = [];  
-   for (let i = 1; i <= 30; i++) {  
-     if (i === 1) pesiConducente.push(30);  
-     else if (i === 2) pesiConducente.push(20);  
-     else if (i === 3) pesiConducente.push(10);  
-     else if (i === 4) pesiConducente.push(7);  
-     else if (i === 5) pesiConducente.push(2);  
-     else if (i >= 6 && i <= 10) pesiConducente.push(2);  
-     else pesiConducente.push(1);  
-   }  
-   
-   // 👑 VIP (1–15 decrescente + 16–30 uguali)  
-   const pesiVIP = [];  
-   
-   // 1–15 decrescente  
-   for (let i = 15; i >= 1; i--) {  
-     pesiVIP.push(i);  
-   }  
-   
-   // 16–30 uguali  
-   for (let i = 16; i <= 30; i++) {  
-     pesiVIP.push(1);  
-   }  
-   
-   function estraiNumero(pesi) {  
-     const totale = pesi.reduce((s, p) => s + p, 0);  
-     const r = Math.random() * totale;  
-   
-     let acc = 0;  
-     for (let i = 0; i < pesi.length; i++) {  
-       acc += pesi[i];  
-       if (r <= acc) return i + 1;  
-     }  
-   }  
-  
-    const statsConducente = Array(30).fill(0);  
-let totaleEstrazioni = 0;  
-  
-   function estrai() {  
-     const conducente = estraiNumero(pesiConducente);  
-     const vip = estraiNumero(pesiVIP);  
-   
-     document.getElementById("result").innerHTML =  
-       "🚆 " + conducente + " &nbsp;&nbsp;&nbsp; 👑 " + vip;  
-   }  
- </script>   </body>  
- </html>  
+  <div class="box">
+    <h3>👑 VIP</h3>
+    <div class="content">
+      <div class="row"><b>1</b><span>11.11%</span></div>
+      <div class="row"><b>2</b><span>10.37%</span></div>
+      <div class="row"><b>3</b><span>9.63%</span></div>
+      <div class="row"><b>4</b><span>8.89%</span></div>
+      <div class="row"><b>5</b><span>8.15%</span></div>
+      <div class="row"><b>6</b><span>7.41%</span></div>
+      <div class="row"><b>7</b><span>6.67%</span></div>
+      <div class="row"><b>8</b><span>5.93%</span></div>
+      <div class="row"><b>9</b><span>5.19%</span></div>
+      <div class="row"><b>10</b><span>4.44%</span></div>
+      <div class="row"><b>11</b><span>3.70%</span></div>
+      <div class="row"><b>12</b><span>2.96%</span></div>
+      <div class="row"><b>13</b><span>2.22%</span></div>
+      <div class="row"><b>14</b><span>1.48%</span></div>
+      <div class="row"><b>15</b><span>0.74%</span></div>
+      <div class="row"><b>16-30</b><span>0.74%</span></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ===== RESULT ===== -->
+<div id="result">-</div>
+
+<button onclick="estrai()">🎰 ESTRAI</button>
+
+<footer>
+© 2026 Rebysa Alliance - Last War Tool
+</footer>
+
+<script>
+const pesiConducente = [];
+for (let i = 1; i <= 30; i++) {
+  if (i === 1) pesiConducente.push(30);
+  else if (i === 2) pesiConducente.push(20);
+  else if (i === 3) pesiConducente.push(10);
+  else if (i === 4) pesiConducente.push(7);
+  else if (i === 5) pesiConducente.push(2);
+  else if (i >= 6 && i <= 10) pesiConducente.push(2);
+  else pesiConducente.push(1);
+}
+
+const pesiVIP = [];
+for (let i = 15; i >= 1; i--) pesiVIP.push(i);
+for (let i = 16; i <= 30; i++) pesiVIP.push(1);
+
+function estraiNumero(pesi){
+  const totale = pesi.reduce((a,b)=>a+b,0);
+  const r = Math.random()*totale;
+
+  let acc = 0;
+  for(let i=0;i<pesi.length;i++){
+    acc += pesi[i];
+    if(r <= acc) return i+1;
+  }
+}
+
+function estrai(){
+  const c = estraiNumero(pesiConducente);
+  const v = estraiNumero(pesiVIP);
+
+  const el = document.getElementById("result");
+
+  el.style.transform = "scale(1.2)";
+  setTimeout(()=>el.style.transform="scale(1)",200);
+
+  el.innerHTML = `🚆 ${c} &nbsp;&nbsp; 👑 ${v}`;
+}
+</script>
+
+</body>
+</html>
