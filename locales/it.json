@@ -1,0 +1,28 @@
+{
+  "title": "🚂 ASSEGNAZIONE LUCKY TRAIN",
+  "description": "Di seguito troverete tutte le info del Lucky Train.",
+
+  "active": "🔔 Il LUCKY TRAIN è attivo solo nelle settimane di riposo (REST).",
+
+  "monday": "📅 Lunedì: Il treno verrà assegnato a MVP della Stella dell’Alleanza ⭐",
+
+  "weekdays": "📅 Da martedì a sabato: ogni mattina viene tirato il dado 🎲 Il risultato servirà per i calcoli del treno della sera, utilizzando il punteggio del giorno precedente",
+  "weekdaysRules": "L’obiettivo resta 7.2M, che rappresenta il minimo sindacale per aprire le casse del VS.",
+  "weekdaysRules2": ":small_orange_diamond: Il target di riferimento è 6.2M ed è questo valore che viene aumentato o diminuito dal dado.",
+  "rule": "🎯 Il dado modifica il target, non il punteggio",
+  "rule1": "Il dado modifica quindi il target, non il punteggio: target + dado → nuovo valore di riferimento",
+  "effect": "🎲 Effetti del dado:",
+  "effect1": "1 → Target 0M",
+  "effect2": "2 → Target +1M",
+  "effect3": "3 → Target +2M",
+  "totalEffect": " 4, 5 e 6 valgono rispettivamente come 1, 2 e 3",
+  "example": "📌 Esempio: 6.2M + dado 2 → 8.2M",
+
+  "tie": "⚖️ In caso di parità si usa il dado 🎲 chi ottiene il valore più alto vince il treno",
+
+  "sunday": " 📅  Domenica: il treno va al vincitore del Deserto 🏜️",
+
+  "vip": "⭐ Gestione VIP del Treno tramite donazioni settimanali",
+
+  "important": "⚠️ IMPORTANTE: Il capo treno può essere nominato solo una volta a settimana, invece se si é stato VIP non si annulla la possibilità di essere anche capotreno nella stessa settimana"
+}
