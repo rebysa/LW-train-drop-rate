@@ -164,6 +164,25 @@ footer {
 
 <button onclick="estrai()">🎰 ESTRAI</button>
 
+<h2 data-i18n="title"></h2>
+<p data-i18n="description"></p>
+<p data-i18n="active"></p>
+<p data-i18n="monday"></p>
+<p data-i18n="weekdays"></p>
+<p data-i18n="weekdaysRules"></p>
+<p data-i18n="weekdaysRules2"></p>
+<p data-i18n="rule"></p>
+<p data-i18n="rule1"></p>
+<p data-i18n="effect"></p>
+<p data-i18n="effect1"></p>
+<p data-i18n="effect2"></p>
+<p data-i18n="effect3"></p>
+<p data-i18n="totalEffect"></p>
+<p data-i18n="example"></p>
+<p data-i18n="tie"></p>
+<p data-i18n="sunday"></p>
+<p data-i18n="vip"></p>
+<p data-i18n="important"></p>
 <footer>
 © 2026 Rebysa -  All Rights Reserved
 </footer>
@@ -206,6 +225,23 @@ function estrai(){
 
   el.innerHTML = `🚆 ${c} &nbsp;&nbsp; 👑 ${v}`;
 }
+
+let translations = {};
+
+async function loadLang() {
+  const res = await fetch("./locales/it.json");
+  translations = await res.json();
+  render();
+}
+
+function render() {
+  document.querySelectorAll("[data-i18n]").forEach(el => {
+    const key = el.getAttribute("data-i18n");
+   el.innerText = translations[key] ?? "";
+  });
+}
+
+window.onload = loadLang;
 </script>
 
 </body>
