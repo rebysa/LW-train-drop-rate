@@ -14,11 +14,8 @@
     --panel:  #0d1628;
     --border: #1e3050;
     --accent: #38bdf8;
-    --glow:   rgba(56,189,248,0.18);
   }
-
   * { box-sizing: border-box; margin: 0; padding: 0; }
-
   body {
     background: var(--bg);
     color: #e2eaf5;
@@ -30,228 +27,158 @@
       repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(30,48,80,0.35) 40px),
       repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(30,48,80,0.18) 40px);
   }
-
-  header {
-    text-align: center;
-    margin-bottom: 36px;
-  }
-
+  header { text-align: center; margin-bottom: 28px; }
   header h1 {
-    font-size: 2.4rem;
-    font-weight: 700;
-    letter-spacing: 4px;
-    text-transform: uppercase;
-    color: var(--accent);
+    font-size: 2.2rem; font-weight: 700; letter-spacing: 4px;
+    text-transform: uppercase; color: var(--accent);
     text-shadow: 0 0 24px rgba(56,189,248,0.5);
   }
+  header p { color: var(--silver); font-size: 1rem; letter-spacing: 2px; margin-top: 4px; }
 
-  header p {
-    color: var(--silver);
-    font-size: 1rem;
-    letter-spacing: 2px;
-    margin-top: 4px;
+  .apikey-wrap {
+    max-width: 540px; margin: 0 auto 20px;
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 12px; padding: 14px 16px;
   }
+  .apikey-wrap > span {
+    display: block; font-size: .8rem; letter-spacing: 1.5px;
+    text-transform: uppercase; color: var(--silver); margin-bottom: 8px;
+  }
+  .apikey-row { display: flex; gap: 8px; }
+  .apikey-row input {
+    flex: 1; min-width: 0;
+    background: #070c18; border: 1px solid var(--border);
+    border-radius: 8px; color: #e2eaf5;
+    font-family: 'Share Tech Mono', monospace; font-size: .9rem;
+    padding: 9px 12px; outline: none; transition: border-color .2s;
+  }
+  .apikey-row input:focus { border-color: var(--accent); }
+  .apikey-toggle {
+    background: none; border: 1px solid var(--border); border-radius: 8px;
+    color: var(--silver); padding: 9px 12px; cursor: pointer;
+    font-size: .9rem; transition: border-color .2s; flex-shrink: 0;
+  }
+  .apikey-toggle:hover { border-color: var(--accent); color: var(--accent); }
+  .apikey-hint { font-size: .78rem; color: #3d5570; margin-top: 7px; }
+  .apikey-hint a { color: #38bdf8; text-decoration: none; }
 
   .upload-zone {
-    border: 2px dashed var(--border);
-    border-radius: 14px;
-    background: var(--panel);
-    padding: 32px 20px;
-    text-align: center;
-    cursor: pointer;
+    border: 2px dashed var(--border); border-radius: 14px;
+    background: var(--panel); padding: 28px 20px; text-align: center;
     transition: border-color .25s, background .25s;
-    position: relative;
-    max-width: 540px;
-    margin: 0 auto 28px;
+    max-width: 540px; margin: 0 auto 20px;
   }
-
-  .upload-zone:hover, .upload-zone.dragover {
-    border-color: var(--accent);
-    background: rgba(56,189,248,0.05);
+  .upload-zone.dragover { border-color: var(--accent); background: rgba(56,189,248,0.05); }
+  #imageInput { display: none; }
+  .upload-zone .icon { font-size: 2.4rem; display: block; margin-bottom: 8px; }
+  .upload-zone p { font-size: 1rem; color: var(--silver); letter-spacing: 1px; margin-bottom: 14px; }
+  .pick-btn {
+    display: inline-block; padding: 10px 26px; border-radius: 8px;
+    background: transparent; border: 2px solid var(--accent); color: var(--accent);
+    font-family: 'Rajdhani', sans-serif; font-size: 1.05rem; font-weight: 700;
+    letter-spacing: 1px; cursor: pointer; transition: background .2s, color .2s;
+    -webkit-tap-highlight-color: transparent;
   }
-
-  .upload-zone input[type=file] {
-    position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
-  }
-
-  .upload-zone .icon { font-size: 2.6rem; display: block; margin-bottom: 10px; }
-
-  .upload-zone p {
-    font-size: 1.05rem;
-    color: var(--silver);
-    letter-spacing: 1px;
-  }
-
-  .upload-zone span {
-    color: var(--accent);
-    font-weight: 700;
-  }
+  .pick-btn:hover, .pick-btn:active { background: var(--accent); color: #0a1628; }
 
   #preview-wrap {
-    display: none;
-    max-width: 300px;
-    margin: 0 auto 22px;
-    border-radius: 12px;
-    overflow: hidden;
-    border: 2px solid var(--border);
-    box-shadow: 0 0 28px rgba(56,189,248,0.1);
+    display: none; max-width: 280px; margin: 0 auto 18px;
+    border-radius: 12px; overflow: hidden;
+    border: 2px solid var(--border); box-shadow: 0 0 28px rgba(56,189,248,0.1);
   }
-
   #preview-wrap img { width: 100%; display: block; }
 
   .btn {
-    display: block;
-    margin: 0 auto 24px;
-    padding: 14px 40px;
-    border: none;
-    border-radius: 10px;
-    background: linear-gradient(135deg, var(--accent), #0ea5e9);
-    color: #0a1628;
-    font-family: 'Rajdhani', sans-serif;
-    font-size: 1.15rem;
-    font-weight: 700;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    cursor: pointer;
+    display: block; margin: 0 auto 22px; padding: 14px 40px; border: none;
+    border-radius: 10px; background: linear-gradient(135deg, var(--accent), #0ea5e9);
+    color: #0a1628; font-family: 'Rajdhani', sans-serif; font-size: 1.1rem;
+    font-weight: 700; letter-spacing: 2px; text-transform: uppercase; cursor: pointer;
     transition: opacity .2s, transform .15s, box-shadow .2s;
     box-shadow: 0 0 20px rgba(56,189,248,0.3);
   }
-
-  .btn:hover { opacity: .9; transform: translateY(-2px); box-shadow: 0 4px 28px rgba(56,189,248,0.45); }
+  .btn:hover { opacity: .9; transform: translateY(-2px); }
   .btn:active { transform: translateY(0); }
-  .btn:disabled { opacity: .45; cursor: not-allowed; transform: none; }
+  .btn:disabled { opacity: .4; cursor: not-allowed; transform: none; }
 
   #status {
-    text-align: center;
-    min-height: 26px;
-    margin-bottom: 16px;
-    font-size: 1rem;
-    letter-spacing: 1px;
-    color: var(--silver);
+    text-align: center; min-height: 26px; margin-bottom: 14px;
+    font-size: 1rem; letter-spacing: 1px; color: var(--silver);
   }
-
   #status.error { color: #f87171; }
   #status.ok    { color: #4ade80; }
 
   .spinner {
-    display: inline-block;
-    width: 16px; height: 16px;
-    border: 2px solid rgba(56,189,248,0.3);
-    border-top-color: var(--accent);
-    border-radius: 50%;
-    animation: spin .7s linear infinite;
-    vertical-align: middle;
-    margin-right: 8px;
+    display: inline-block; width: 15px; height: 15px;
+    border: 2px solid rgba(56,189,248,0.3); border-top-color: var(--accent);
+    border-radius: 50%; animation: spin .7s linear infinite;
+    vertical-align: middle; margin-right: 7px;
   }
-
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  /* TABLE */
   .table-wrap {
-    max-width: 680px;
-    margin: 0 auto;
-    border-radius: 14px;
-    overflow: hidden;
-    border: 1px solid var(--border);
-    box-shadow: 0 0 40px rgba(0,0,0,0.5);
+    max-width: 680px; margin: 0 auto; border-radius: 14px;
+    overflow: hidden; border: 1px solid var(--border); box-shadow: 0 0 40px rgba(0,0,0,0.5);
   }
-
   table { width: 100%; border-collapse: collapse; }
-
-  thead tr {
-    background: #111e35;
-  }
-
+  thead tr { background: #111e35; }
   thead th {
-    padding: 14px 18px;
-    text-align: left;
-    font-size: .85rem;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--accent);
+    padding: 13px 16px; text-align: left; font-size: .82rem;
+    letter-spacing: 2px; text-transform: uppercase; color: var(--accent);
     border-bottom: 1px solid var(--border);
   }
-
   tbody tr {
-    background: var(--panel);
-    border-bottom: 1px solid var(--border);
-    transition: background .15s;
-    animation: rowIn .35s ease both;
+    background: var(--panel); border-bottom: 1px solid var(--border);
+    transition: background .15s; animation: rowIn .35s ease both;
   }
-
-  @keyframes rowIn {
-    from { opacity: 0; transform: translateX(-10px); }
-    to   { opacity: 1; transform: none; }
-  }
-
+  @keyframes rowIn { from { opacity:0; transform:translateX(-10px); } to { opacity:1; transform:none; } }
   tbody tr:hover { background: rgba(56,189,248,0.05); }
   tbody tr:last-child { border-bottom: none; }
-
-  td {
-    padding: 13px 18px;
-    font-size: 1.05rem;
-    letter-spacing: .5px;
-  }
-
-  .rank-cell {
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 1rem;
-    width: 42px;
-    color: var(--silver);
-  }
-
+  td { padding: 12px 16px; font-size: 1rem; }
+  .rank-cell { font-family: 'Share Tech Mono', monospace; width: 40px; color: var(--silver); }
   .rank-1 { color: var(--gold);   font-weight: 700; }
   .rank-2 { color: var(--silver); font-weight: 700; }
   .rank-3 { color: var(--bronze); font-weight: 700; }
+  .name-cell { font-weight: 700; font-size: 1.1rem; }
+  .points-cell { font-family: 'Share Tech Mono', monospace; color: var(--accent); text-align: right; }
+  .medal { margin-right: 5px; }
 
-  .name-cell { font-weight: 700; font-size: 1.15rem; }
-
-  .points-cell {
-    font-family: 'Share Tech Mono', monospace;
-    color: var(--accent);
-    font-size: 1.05rem;
-    text-align: right;
-  }
-
-  .medal { margin-right: 6px; }
-
-  /* export */
   .export-bar {
-    max-width: 680px;
-    margin: 16px auto 0;
-    display: flex;
-    gap: 10px;
-    justify-content: flex-end;
+    max-width: 680px; margin: 14px auto 0;
+    display: flex; gap: 10px; justify-content: flex-end;
   }
-
   .btn-sm {
-    padding: 8px 18px;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    background: var(--panel);
-    color: var(--silver);
-    font-family: 'Rajdhani', sans-serif;
-    font-size: .95rem;
-    font-weight: 600;
-    letter-spacing: 1px;
-    cursor: pointer;
-    transition: border-color .2s, color .2s;
+    padding: 8px 18px; border: 1px solid var(--border); border-radius: 8px;
+    background: var(--panel); color: var(--silver);
+    font-family: 'Rajdhani', sans-serif; font-size: .9rem; font-weight: 600;
+    letter-spacing: 1px; cursor: pointer; transition: border-color .2s, color .2s;
   }
-
   .btn-sm:hover { border-color: var(--accent); color: var(--accent); }
 </style>
 </head>
 <body>
 
 <header>
-  <h1>⚔ Last War Scanner</h1>
+  <h1>Last War Scanner</h1>
   <p>Leaderboard OCR · Powered by Claude Vision</p>
 </header>
 
+<div class="apikey-wrap">
+  <span>Anthropic API Key</span>
+  <div class="apikey-row">
+    <input type="password" id="apiKeyInput" placeholder="sk-ant-api03-..." autocomplete="off" />
+    <button class="apikey-toggle" id="toggleKey">Mostra</button>
+  </div>
+  <p class="apikey-hint">
+    Ottieni la tua key su <a href="https://console.anthropic.com/keys" target="_blank">console.anthropic.com</a>.
+    Non viene salvata ne inviata a nessuno tranne Anthropic.
+  </p>
+</div>
+
+<input type="file" id="imageInput" accept="image/*" />
 <div class="upload-zone" id="dropZone">
-  <input type="file" id="imageInput" accept="image/*" />
   <span class="icon">📷</span>
-  <p>Trascina uno screenshot qui<br>oppure <span>clicca per scegliere</span></p>
+  <p>Trascina uno screenshot qui</p>
+  <label for="imageInput" class="pick-btn">Scegli immagine</label>
 </div>
 
 <div id="preview-wrap">
@@ -259,7 +186,6 @@
 </div>
 
 <button class="btn" id="readBtn" disabled>Analizza Screenshot</button>
-
 <div id="status"></div>
 
 <div class="table-wrap" id="tableWrap" style="display:none">
@@ -276,7 +202,7 @@
 </div>
 
 <div class="export-bar" id="exportBar" style="display:none">
-  <button class="btn-sm" id="copyBtn">📋 Copia CSV</button>
+  <button class="btn-sm" id="copyBtn">Copia CSV</button>
 </div>
 
 <script>
@@ -290,10 +216,17 @@ const dropZone    = document.getElementById("dropZone");
 const tableWrap   = document.getElementById("tableWrap");
 const exportBar   = document.getElementById("exportBar");
 const copyBtn     = document.getElementById("copyBtn");
+const apiKeyInput = document.getElementById("apiKeyInput");
+const toggleKey   = document.getElementById("toggleKey");
 
 let currentPlayers = [];
 
-// drag & drop
+toggleKey.addEventListener("click", () => {
+  const hidden = apiKeyInput.type === "password";
+  apiKeyInput.type = hidden ? "text" : "password";
+  toggleKey.textContent = hidden ? "Nascondi" : "Mostra";
+});
+
 dropZone.addEventListener("dragover", e => { e.preventDefault(); dropZone.classList.add("dragover"); });
 dropZone.addEventListener("dragleave", () => dropZone.classList.remove("dragover"));
 dropZone.addEventListener("drop", e => {
@@ -320,8 +253,16 @@ readBtn.addEventListener("click", async () => {
   const file = imageInput.files[0];
   if (!file) return;
 
+  const apiKey = apiKeyInput.value.trim();
+  if (!apiKey) {
+    statusDiv.textContent = "Inserisci la tua API key prima di continuare.";
+    statusDiv.className = "error";
+    apiKeyInput.focus();
+    return;
+  }
+
   readBtn.disabled = true;
-  statusDiv.innerHTML = '<span class="spinner"></span> Analisi Claude Vision in corso…';
+  statusDiv.innerHTML = '<span class="spinner"></span> Analisi in corso...';
   statusDiv.className = "";
   tableWrap.style.display = "none";
   exportBar.style.display = "none";
@@ -332,51 +273,46 @@ readBtn.addEventListener("click", async () => {
 
     const response = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": apiKey,
+        "anthropic-version": "2023-06-01",
+        "anthropic-dangerous-direct-browser-access": "true"
+      },
       body: JSON.stringify({
         model: "claude-sonnet-4-20250514",
         max_tokens: 1000,
         messages: [{
           role: "user",
           content: [
-            {
-              type: "image",
-              source: { type: "base64", media_type: mediaType, data: base64 }
-            },
-            {
-              type: "text",
-              text: `This is a leaderboard screenshot from the game "Last War: Survival". 
+            { type: "image", source: { type: "base64", media_type: mediaType, data: base64 } },
+            { type: "text", text: `This is a leaderboard screenshot from the game "Last War: Survival".
 Extract ALL players visible and return ONLY a valid JSON array, no markdown, no backticks, no explanation.
 Each object must have exactly two keys: "name" (string) and "points" (number, digits only, no commas).
 Example: [{"name":"Cpt Cockov","points":79547896},{"name":"Nuclear Maximus","points":61795097}]
-Extract every player you can see, preserving the visual order from top to bottom.`
-            }
+Extract every player you can see, preserving the visual order from top to bottom.` }
           ]
         }]
       })
     });
 
     const data = await response.json();
-
     if (data.error) throw new Error(data.error.message);
 
     const raw = data.content.map(b => b.text || "").join("").trim();
-
-    // strip possible markdown fences
     const clean = raw.replace(/```json|```/gi, "").trim();
-
     const players = JSON.parse(clean);
 
     currentPlayers = players;
     renderTable(players);
-    statusDiv.innerHTML = `✅ Trovati <strong>${players.length}</strong> giocatori`;
+    statusDiv.innerHTML = "Trovati " + players.length + " giocatori";
     statusDiv.className = "ok";
     tableWrap.style.display = "block";
     exportBar.style.display = "flex";
 
   } catch (err) {
     console.error(err);
-    statusDiv.textContent = "❌ Errore: " + (err.message || "analisi fallita");
+    statusDiv.textContent = "Errore: " + (err.message || "analisi fallita");
     statusDiv.className = "error";
   }
 
@@ -386,41 +322,41 @@ Extract every player you can see, preserving the visual order from top to bottom
 function renderTable(players) {
   tableBody.innerHTML = "";
   const medals = ["🥇","🥈","🥉"];
-
   players.forEach((p, i) => {
-    const rank = i + 1;
-    const cls  = rank <= 3 ? `rank-${rank}` : "";
-    const medal = medals[i] ? `<span class="medal">${medals[i]}</span>` : "";
+    const rank  = i + 1;
+    const cls   = rank <= 3 ? "rank-" + rank : "";
+    const medal = medals[i] ? '<span class="medal">' + medals[i] + '</span>' : "";
     const tr = document.createElement("tr");
-    tr.style.animationDelay = `${i * 50}ms`;
-    tr.innerHTML = `
-      <td class="rank-cell ${cls}">${rank}</td>
-      <td class="name-cell">${medal}${escHtml(p.name)}</td>
-      <td class="points-cell">${Number(p.points).toLocaleString("it-IT")}</td>
-    `;
+    tr.style.animationDelay = (i * 50) + "ms";
+    tr.innerHTML =
+      '<td class="rank-cell ' + cls + '">' + rank + '</td>' +
+      '<td class="name-cell">' + medal + escHtml(p.name) + '</td>' +
+      '<td class="points-cell">' + Number(p.points).toLocaleString("it-IT") + '</td>';
     tableBody.appendChild(tr);
   });
 }
 
 function escHtml(s) {
-  return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  return String(s).replace(/[&<>"']/g, function(c) {
+    return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+  });
 }
 
 function toBase64(file) {
-  return new Promise((res, rej) => {
+  return new Promise(function(res, rej) {
     const r = new FileReader();
-    r.onload = () => res(r.result.split(",")[1]);
-    r.onerror = () => rej(new Error("Lettura file fallita"));
+    r.onload = function() { res(r.result.split(",")[1]); };
+    r.onerror = function() { rej(new Error("Lettura file fallita")); };
     r.readAsDataURL(file);
   });
 }
 
 copyBtn.addEventListener("click", () => {
   if (!currentPlayers.length) return;
-  const csv = "Nome,Punti\n" + currentPlayers.map(p => `${p.name},${p.points}`).join("\n");
+  const csv = "Nome,Punti\n" + currentPlayers.map(p => p.name + "," + p.points).join("\n");
   navigator.clipboard.writeText(csv).then(() => {
-    copyBtn.textContent = "✅ Copiato!";
-    setTimeout(() => copyBtn.textContent = "📋 Copia CSV", 2000);
+    copyBtn.textContent = "Copiato!";
+    setTimeout(() => { copyBtn.textContent = "Copia CSV"; }, 2000);
   });
 });
 </script>
