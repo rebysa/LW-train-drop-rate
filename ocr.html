@@ -2,93 +2,203 @@
 <html lang="it">
 <head>
 <meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 
-<title>OCR Test</title>
+<title>Last War OCR</title>
 
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 
 <style>
 body{
-  background:#111827;
+  background:#0f172a;
   color:white;
-  font-family:sans-serif;
+  font-family:Arial, sans-serif;
   padding:20px;
 }
 
+h1{
+  color:#38bdf8;
+}
+
 button{
-  padding:10px 20px;
+  margin-top:10px;
+  padding:12px 20px;
+  border:none;
+  border-radius:10px;
+  background:#38bdf8;
+  color:white;
+  font-weight:bold;
   cursor:pointer;
 }
 
-#output-text{
+table{
+  width:100%;
+  border-collapse:collapse;
   margin-top:20px;
-  padding:10px;
-  border:1px solid #444;
-  white-space:pre-wrap;
+  background:#111827;
+}
+
+th, td{
+  border:1px solid #374151;
+  padding:12px;
+  text-align:left;
+}
+
+th{
+  background:#1e293b;
+  color:#7dd3fc;
+}
+
+#status{
+  margin-top:15px;
+  color:#94a3b8;
+}
+
+.preview{
+  margin-top:20px;
+  max-width:300px;
+  border-radius:12px;
 }
 </style>
 </head>
 
 <body>
 
-<h2>Upload Screenshot</h2>
+<h1>📸 Last War OCR</h1>
 
-<input type="file" id="screen-shot" accept="image/*">
+<input type="file" id="imageInput" accept="image/*" />
 
-<button id="btn-read">
-  Leggi Testo
+<br>
+
+<button id="readBtn">
+  Leggi Screenshot
 </button>
 
-<div id="output-text">
-  Il testo letto apparirà qui...
-</div>
+<div id="status"></div>
+
+<img id="preview" class="preview" />
+
+<table>
+  <thead>
+    <tr>
+      <th>Nome</th>
+      <th>Punti</th>
+    </tr>
+  </thead>
+
+  <tbody id="tableBody"></tbody>
+</table>
 
 <script>
 
-document
-  .getElementById('btn-read')
-  .addEventListener('click', async () => {
+const imageInput = document.getElementById("imageInput");
+const readBtn = document.getElementById("readBtn");
+const tableBody = document.getElementById("tableBody");
+const statusDiv = document.getElementById("status");
+const preview = document.getElementById("preview");
 
-    const fileInput =
-      document.getElementById('screen-shot');
+imageInput.addEventListener("change", () => {
 
-    const outputDiv =
-      document.getElementById('output-text');
+  const file = imageInput.files[0];
 
-    if (!fileInput.files.length) {
-      alert('Seleziona uno screenshot');
-      return;
-    }
-
-    const file = fileInput.files[0];
-
-    outputDiv.innerText =
-      "Analisi in corso...";
-
-    try {
-
-      const result =
-        await Tesseract.recognize(
-          file,
-          'eng',
-          {
-            logger: m => console.log(m)
-          }
-        );
-
-      outputDiv.innerText =
-        result.data.text;
-
-    } catch(err){
-
-      console.error(err);
-
-      outputDiv.innerText =
-        "Errore OCR";
-
-    }
+  if(file){
+    preview.src = URL.createObjectURL(file);
+  }
 
 });
+
+readBtn.addEventListener("click", async () => {
+
+  const file = imageInput.files[0];
+
+  if(!file){
+    alert("Seleziona uno screenshot");
+    return;
+  }
+
+  statusDiv.innerText = "🔍 Analisi OCR in corso...";
+
+  try{
+
+    const result = await Tesseract.recognize(
+      file,
+      "eng",
+      {
+        logger: m => console.log(m)
+      }
+    );
+
+    const text = result.data.text;
+
+    console.log(text);
+
+    const rows = text
+      .split("\n")
+      .map(r => r.trim())
+      .filter(Boolean);
+
+    const players = [];
+
+    for(let i = 0; i < rows.length; i++){
+
+      const current = rows[i];
+
+      // Se è un punteggio
+      if(/^\d[\d,]+$/.test(current)){
+
+        const points = current;
+
+        // Nome = 2 righe sopra
+        const name = rows[i - 2];
+
+        // Ignora robe strane OCR
+        if(name && !name.includes("Valhalla")){
+
+          players.push({
+            name,
+            points
+          });
+
+        }
+
+      }
+
+    }
+
+    renderTable(players);
+
+    statusDiv.innerText =
+      `✅ Trovati ${players.length} player`;
+
+  }catch(err){
+
+    console.error(err);
+
+    statusDiv.innerText =
+      "❌ Errore OCR";
+
+  }
+
+});
+
+function renderTable(players){
+
+  tableBody.innerHTML = "";
+
+  players.forEach(player => {
+
+    const tr = document.createElement("tr");
+
+    tr.innerHTML = `
+      <td>${player.name}</td>
+      <td>${player.points}</td>
+    `;
+
+    tableBody.appendChild(tr);
+
+  });
+
+}
 
 </script>
 
