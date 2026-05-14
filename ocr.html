@@ -1,257 +1,324 @@
-import { useState, useRef, useCallback } from "react";
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Last War Scanner</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&family=Share+Tech+Mono&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --gold:   #f5c842;
+    --silver: #a8b8d0;
+    --bronze: #c97c3a;
+    --bg:     #090e1a;
+    --panel:  #0d1628;
+    --border: #1e3050;
+    --accent: #38bdf8;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
 
-const MEDALS = ["🥇", "🥈", "🥉"];
+  body {
+    background: var(--bg);
+    color: #e2eaf5;
+    font-family: 'Rajdhani', sans-serif;
+    min-height: 100vh;
+    padding: 28px 16px 60px;
+    background-image:
+      radial-gradient(ellipse 60% 40% at 50% 0%, rgba(56,189,248,0.08) 0%, transparent 70%),
+      repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(30,48,80,0.3) 40px),
+      repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(30,48,80,0.15) 40px);
+  }
 
-export default function LastWarScanner() {
-  const [image, setImage] = useState(null);       // { url, file, base64, mediaType }
-  const [players, setPlayers] = useState([]);
-  const [status, setStatus] = useState("idle");   // idle | loading | ok | error
-  const [errorMsg, setErrorMsg] = useState("");
-  const [dragging, setDragging] = useState(false);
-  const inputRef = useRef(null);
+  /* HEADER */
+  header { text-align: center; margin-bottom: 28px; }
+  header h1 {
+    font-size: 2rem; font-weight: 700; letter-spacing: 4px;
+    text-transform: uppercase; color: var(--accent);
+    text-shadow: 0 0 24px rgba(56,189,248,0.55);
+  }
+  header p { color: var(--silver); font-size: .9rem; letter-spacing: 2px; margin-top: 4px; }
 
-  const loadFile = useCallback((file) => {
-    if (!file) return;
-    const url = URL.createObjectURL(file);
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const b64 = e.target.result.split(",")[1];
-      setImage({ url, file, base64: b64, mediaType: file.type || "image/jpeg" });
-      setPlayers([]);
-      setStatus("idle");
-    };
-    reader.readAsDataURL(file);
-  }, []);
+  /* UPLOAD */
+  #imageInput { display: none; }
 
-  const onDrop = (e) => {
-    e.preventDefault();
-    setDragging(false);
-    loadFile(e.dataTransfer.files[0]);
+  .drop-zone {
+    max-width: 500px; margin: 0 auto 20px;
+    border: 2px dashed var(--border); border-radius: 14px;
+    background: var(--panel); padding: 28px 20px; text-align: center;
+    transition: border-color .2s, background .2s;
+  }
+  .drop-zone.dragover { border-color: var(--accent); background: rgba(56,189,248,0.06); }
+  .drop-zone .icon { font-size: 2.4rem; display: block; margin-bottom: 8px; }
+  .drop-zone p { color: var(--silver); margin-bottom: 14px; font-size: 1rem; }
+
+  .pick-btn {
+    display: inline-block; padding: 9px 24px; border-radius: 8px;
+    border: 2px solid var(--accent); color: var(--accent); background: transparent;
+    font-family: 'Rajdhani', sans-serif; font-size: 1rem; font-weight: 700;
+    letter-spacing: 1px; cursor: pointer; transition: background .2s, color .2s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .pick-btn:hover, .pick-btn:active { background: var(--accent); color: #0a1628; }
+
+  #filename {
+    margin-top: 10px; font-size: .9rem;
+    color: #4ade80; display: none;
+  }
+
+  /* PREVIEW */
+  #preview-wrap {
+    display: none; max-width: 260px; margin: 0 auto 18px;
+    border-radius: 12px; overflow: hidden; border: 2px solid var(--border);
+  }
+  #preview-wrap img { width: 100%; display: block; }
+
+  /* BUTTON */
+  .btn {
+    display: block; margin: 0 auto 20px; padding: 14px 40px;
+    border: none; border-radius: 10px;
+    background: linear-gradient(135deg, var(--accent), #0ea5e9);
+    color: #0a1628; font-family: 'Rajdhani', sans-serif;
+    font-size: 1.1rem; font-weight: 700; letter-spacing: 2px;
+    text-transform: uppercase; cursor: pointer;
+    box-shadow: 0 0 20px rgba(56,189,248,0.3);
+    transition: opacity .2s, transform .15s;
+  }
+  .btn:hover { opacity: .9; transform: translateY(-2px); }
+  .btn:active { transform: none; }
+  .btn:disabled { background: #1e3050; color: #4a6080; box-shadow: none; cursor: not-allowed; transform: none; }
+
+  /* STATUS */
+  #status {
+    text-align: center; min-height: 24px; margin-bottom: 14px;
+    font-size: 1rem; letter-spacing: 1px; color: var(--silver);
+  }
+  #status.ok    { color: #4ade80; }
+  #status.error { color: #f87171; }
+
+  .spinner {
+    display: inline-block; width: 14px; height: 14px;
+    border: 2px solid rgba(56,189,248,0.3); border-top-color: var(--accent);
+    border-radius: 50%; animation: spin .7s linear infinite;
+    vertical-align: middle; margin-right: 6px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* TABLE */
+  .table-wrap {
+    display: none; max-width: 640px; margin: 0 auto;
+    border-radius: 14px; overflow: hidden;
+    border: 1px solid var(--border); box-shadow: 0 0 40px rgba(0,0,0,0.5);
+  }
+  table { width: 100%; border-collapse: collapse; }
+  thead tr { background: #111e35; }
+  thead th {
+    padding: 12px 16px; text-align: left; font-size: .8rem;
+    letter-spacing: 2px; text-transform: uppercase;
+    color: var(--accent); border-bottom: 1px solid var(--border);
+  }
+  thead th:last-child { text-align: right; }
+
+  tbody tr {
+    background: var(--panel); border-bottom: 1px solid var(--border);
+    animation: rowIn .35s ease both;
+  }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: rgba(56,189,248,0.04); }
+  @keyframes rowIn { from { opacity:0; transform:translateX(-8px); } to { opacity:1; transform:none; } }
+
+  td { padding: 12px 16px; }
+  .td-rank { font-family: 'Share Tech Mono', monospace; width: 38px; }
+  .td-name { font-weight: 700; font-size: 1.05rem; }
+  .td-pts  { font-family: 'Share Tech Mono', monospace; color: var(--accent); text-align: right; }
+
+  .rank-1 { color: var(--gold);   font-weight: 700; }
+  .rank-2 { color: var(--silver); font-weight: 700; }
+  .rank-3 { color: var(--bronze); font-weight: 700; }
+
+  /* EXPORT */
+  .export-bar {
+    display: none; max-width: 640px; margin: 12px auto 0;
+    justify-content: flex-end;
+  }
+  .btn-sm {
+    padding: 8px 18px; border: 1px solid var(--border); border-radius: 8px;
+    background: var(--panel); color: var(--silver);
+    font-family: 'Rajdhani', sans-serif; font-size: .9rem; font-weight: 600;
+    letter-spacing: 1px; cursor: pointer; transition: border-color .2s, color .2s;
+  }
+  .btn-sm:hover { border-color: var(--accent); color: var(--accent); }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>⚔ Last War Scanner</h1>
+  <p>Leaderboard OCR · Claude Vision</p>
+</header>
+
+<!-- UPLOAD -->
+<input type="file" id="imageInput" accept="image/*"/>
+<div class="drop-zone" id="dropZone">
+  <span class="icon">📷</span>
+  <p>Trascina uno screenshot qui</p>
+  <label for="imageInput" class="pick-btn">Scegli immagine</label>
+  <div id="filename"></div>
+</div>
+
+<div id="preview-wrap">
+  <img id="preview" alt="preview"/>
+</div>
+
+<button class="btn" id="readBtn" disabled>Analizza Screenshot</button>
+<div id="status"></div>
+
+<div class="table-wrap" id="tableWrap">
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Giocatore</th>
+        <th>Punti</th>
+      </tr>
+    </thead>
+    <tbody id="tableBody"></tbody>
+  </table>
+</div>
+
+<div class="export-bar" id="exportBar">
+  <button class="btn-sm" id="copyBtn">📋 Copia CSV</button>
+</div>
+
+<script>
+const imageInput  = document.getElementById("imageInput");
+const readBtn     = document.getElementById("readBtn");
+const tableBody   = document.getElementById("tableBody");
+const statusDiv   = document.getElementById("status");
+const preview     = document.getElementById("preview");
+const previewWrap = document.getElementById("preview-wrap");
+const dropZone    = document.getElementById("dropZone");
+const tableWrap   = document.getElementById("tableWrap");
+const exportBar   = document.getElementById("exportBar");
+const copyBtn     = document.getElementById("copyBtn");
+const filename    = document.getElementById("filename");
+
+let currentPlayers = [];
+let currentBase64  = "";
+let currentMime    = "";
+
+// Drag & drop
+dropZone.addEventListener("dragover",  e => { e.preventDefault(); dropZone.classList.add("dragover"); });
+dropZone.addEventListener("dragleave", () => dropZone.classList.remove("dragover"));
+dropZone.addEventListener("drop", e => {
+  e.preventDefault();
+  dropZone.classList.remove("dragover");
+  if (e.dataTransfer.files[0]) loadFile(e.dataTransfer.files[0]);
+});
+
+imageInput.addEventListener("change", () => {
+  if (imageInput.files[0]) loadFile(imageInput.files[0]);
+});
+
+function loadFile(file) {
+  preview.src = URL.createObjectURL(file);
+  previewWrap.style.display = "block";
+  filename.textContent = "✅ " + file.name;
+  filename.style.display = "block";
+  readBtn.disabled = false;
+  setStatus("", "");
+  tableWrap.style.display = "none";
+  exportBar.style.display = "none";
+
+  const reader = new FileReader();
+  reader.onload = e => {
+    currentBase64 = e.target.result.split(",")[1];
+    currentMime   = file.type || "image/jpeg";
   };
+  reader.readAsDataURL(file);
+}
 
-  const analyze = async () => {
-    if (!image) return;
-    setStatus("loading");
-    setPlayers([]);
-    setErrorMsg("");
+readBtn.addEventListener("click", async () => {
+  if (!currentBase64) return;
+  readBtn.disabled = true;
+  setStatus('<span class="spinner"></span> Analisi in corso…', "");
+  tableWrap.style.display = "none";
+  exportBar.style.display = "none";
 
-    try {
-      const res = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: "claude-sonnet-4-20250514",
-          max_tokens: 1000,
-          messages: [{
-            role: "user",
-            content: [
-              { type: "image", source: { type: "base64", media_type: image.mediaType, data: image.base64 } },
-              { type: "text", text: `This is a leaderboard screenshot from the game "Last War: Survival".
+  try {
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 1000,
+        messages: [{
+          role: "user",
+          content: [
+            { type: "image", source: { type: "base64", media_type: currentMime, data: currentBase64 } },
+            { type: "text", text: `This is a leaderboard screenshot from the game "Last War: Survival".
 Extract ALL players visible and return ONLY a valid JSON array, no markdown, no backticks, no explanation.
 Each object must have exactly two keys: "name" (string) and "points" (number, digits only, no commas).
 Example: [{"name":"Cpt Cockov","points":79547896},{"name":"Nuclear Maximus","points":61795097}]
 Extract every player you can see, preserving the visual order from top to bottom.` }
-            ]
-          }]
-        })
-      });
+          ]
+        }]
+      })
+    });
 
-      const data = await res.json();
-      if (data.error) throw new Error(data.error.message);
+    const data = await res.json();
+    if (data.error) throw new Error(data.error.message);
 
-      const raw = data.content.map(b => b.text || "").join("").trim();
-      const clean = raw.replace(/```json|```/gi, "").trim();
-      const parsed = JSON.parse(clean);
-      setPlayers(parsed);
-      setStatus("ok");
-    } catch (err) {
-      setErrorMsg(err.message || "Errore sconosciuto");
-      setStatus("error");
-    }
-  };
+    const raw   = data.content.map(b => b.text || "").join("").trim();
+    const clean = raw.replace(/```json|```/gi, "").trim();
+    const players = JSON.parse(clean);
 
-  const copyCSV = () => {
-    const csv = "Nome,Punti\n" + players.map(p => `${p.name},${p.points}`).join("\n");
-    navigator.clipboard.writeText(csv);
-  };
+    currentPlayers = players;
+    renderTable(players);
+    setStatus("✅ Trovati " + players.length + " giocatori", "ok");
+    tableWrap.style.display = "block";
+    exportBar.style.display = "flex";
 
-  return (
-    <div style={{
-      minHeight: "100vh",
-      background: "#090e1a",
-      backgroundImage: `
-        radial-gradient(ellipse 60% 40% at 50% 0%, rgba(56,189,248,0.08) 0%, transparent 70%),
-        repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(30,48,80,0.3) 40px),
-        repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(30,48,80,0.15) 40px)
-      `,
-      color: "#e2eaf5",
-      fontFamily: "'Rajdhani', 'Segoe UI', sans-serif",
-      padding: "28px 16px 60px",
-    }}>
+  } catch (err) {
+    setStatus("❌ " + (err.message || "Errore analisi"), "error");
+  }
 
-      {/* Header */}
-      <div style={{ textAlign: "center", marginBottom: 28 }}>
-        <div style={{
-          fontSize: "2rem", fontWeight: 700, letterSpacing: 4,
-          textTransform: "uppercase", color: "#38bdf8",
-          textShadow: "0 0 24px rgba(56,189,248,0.55)",
-        }}>⚔ Last War Scanner</div>
-        <div style={{ color: "#a8b8d0", fontSize: "0.9rem", letterSpacing: 2, marginTop: 4 }}>
-          Leaderboard OCR · Claude Vision
-        </div>
-      </div>
+  readBtn.disabled = false;
+});
 
-      {/* Drop zone */}
-      <div
-        onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
-        onDragLeave={() => setDragging(false)}
-        onDrop={onDrop}
-        onClick={() => inputRef.current?.click()}
-        style={{
-          maxWidth: 500, margin: "0 auto 20px",
-          border: `2px dashed ${dragging ? "#38bdf8" : "#1e3050"}`,
-          borderRadius: 14,
-          background: dragging ? "rgba(56,189,248,0.06)" : "#0d1628",
-          padding: "28px 20px", textAlign: "center",
-          cursor: "pointer", transition: "all .2s",
-        }}
-      >
-        <input
-          ref={inputRef}
-          type="file"
-          accept="image/*"
-          style={{ display: "none" }}
-          onChange={(e) => loadFile(e.target.files[0])}
-        />
-        <div style={{ fontSize: "2.4rem", marginBottom: 8 }}>📷</div>
-        {image ? (
-          <div style={{ color: "#4ade80", fontWeight: 600 }}>
-            ✅ {image.file.name}
-          </div>
-        ) : (
-          <>
-            <div style={{ color: "#a8b8d0", marginBottom: 12 }}>Trascina screenshot o tocca per scegliere</div>
-            <div style={{
-              display: "inline-block", padding: "9px 24px",
-              border: "2px solid #38bdf8", borderRadius: 8,
-              color: "#38bdf8", fontWeight: 700, letterSpacing: 1,
-            }}>Scegli immagine</div>
-          </>
-        )}
-      </div>
-
-      {/* Preview */}
-      {image && (
-        <div style={{ maxWidth: 260, margin: "0 auto 20px", borderRadius: 12, overflow: "hidden", border: "2px solid #1e3050" }}>
-          <img src={image.url} alt="preview" style={{ width: "100%", display: "block" }} />
-        </div>
-      )}
-
-      {/* Analyze button */}
-      <button
-        onClick={analyze}
-        disabled={!image || status === "loading"}
-        style={{
-          display: "block", margin: "0 auto 20px",
-          padding: "14px 40px", border: "none", borderRadius: 10,
-          background: (!image || status === "loading") ? "#1e3050" : "linear-gradient(135deg, #38bdf8, #0ea5e9)",
-          color: (!image || status === "loading") ? "#4a6080" : "#0a1628",
-          fontFamily: "inherit", fontSize: "1.1rem", fontWeight: 700,
-          letterSpacing: 2, textTransform: "uppercase",
-          cursor: (!image || status === "loading") ? "not-allowed" : "pointer",
-          transition: "all .2s",
-          boxShadow: (!image || status === "loading") ? "none" : "0 0 20px rgba(56,189,248,0.3)",
-        }}
-      >
-        {status === "loading" ? "Analisi in corso..." : "Analizza Screenshot"}
-      </button>
-
-      {/* Loading spinner */}
-      {status === "loading" && (
-        <div style={{ textAlign: "center", marginBottom: 16, color: "#a8b8d0" }}>
-          <span style={{
-            display: "inline-block", width: 16, height: 16,
-            border: "2px solid rgba(56,189,248,0.3)", borderTopColor: "#38bdf8",
-            borderRadius: "50%", animation: "spin .7s linear infinite",
-            verticalAlign: "middle", marginRight: 8,
-          }} />
-          Claude sta analizzando l'immagine...
-        </div>
-      )}
-
-      {/* Error */}
-      {status === "error" && (
-        <div style={{ textAlign: "center", color: "#f87171", marginBottom: 16 }}>
-          ❌ {errorMsg}
-        </div>
-      )}
-
-      {/* Success count */}
-      {status === "ok" && (
-        <div style={{ textAlign: "center", color: "#4ade80", marginBottom: 16, fontWeight: 600 }}>
-          ✅ Trovati {players.length} giocatori
-        </div>
-      )}
-
-      {/* Table */}
-      {players.length > 0 && (
-        <>
-          <div style={{
-            maxWidth: 640, margin: "0 auto",
-            borderRadius: 14, overflow: "hidden",
-            border: "1px solid #1e3050",
-            boxShadow: "0 0 40px rgba(0,0,0,0.5)",
-          }}>
-            <table style={{ width: "100%", borderCollapse: "collapse" }}>
-              <thead>
-                <tr style={{ background: "#111e35" }}>
-                  {["#", "Giocatore", "Punti"].map((h, i) => (
-                    <th key={h} style={{
-                      padding: "12px 16px", textAlign: i === 2 ? "right" : "left",
-                      fontSize: ".8rem", letterSpacing: 2, textTransform: "uppercase",
-                      color: "#38bdf8", borderBottom: "1px solid #1e3050",
-                    }}>{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {players.map((p, i) => {
-                  const rankColor = i === 0 ? "#f5c842" : i === 1 ? "#a8b8d0" : i === 2 ? "#c97c3a" : "#a8b8d0";
-                  return (
-                    <tr key={i} style={{
-                      background: "#0d1628",
-                      borderBottom: i < players.length - 1 ? "1px solid #1e3050" : "none",
-                    }}>
-                      <td style={{ padding: "12px 16px", fontFamily: "monospace", color: rankColor, width: 40, fontWeight: i < 3 ? 700 : 400 }}>
-                        {i + 1}
-                      </td>
-                      <td style={{ padding: "12px 16px", fontWeight: 700, fontSize: "1.05rem" }}>
-                        {MEDALS[i] && <span style={{ marginRight: 6 }}>{MEDALS[i]}</span>}
-                        {p.name}
-                      </td>
-                      <td style={{ padding: "12px 16px", textAlign: "right", fontFamily: "monospace", color: "#38bdf8" }}>
-                        {Number(p.points).toLocaleString("it-IT")}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-
-          <div style={{ maxWidth: 640, margin: "12px auto 0", display: "flex", justifyContent: "flex-end" }}>
-            <button onClick={copyCSV} style={{
-              padding: "8px 18px", border: "1px solid #1e3050", borderRadius: 8,
-              background: "#0d1628", color: "#a8b8d0", fontFamily: "inherit",
-              fontSize: ".9rem", fontWeight: 600, letterSpacing: 1, cursor: "pointer",
-            }}>
-              📋 Copia CSV
-            </button>
-          </div>
-        </>
-      )}
-
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-    </div>
-  );
+function setStatus(html, cls) {
+  statusDiv.innerHTML = html;
+  statusDiv.className = cls;
 }
+
+const MEDALS = ["🥇","🥈","🥉"];
+
+function renderTable(players) {
+  tableBody.innerHTML = "";
+  players.forEach((p, i) => {
+    const rankCls = i < 3 ? " rank-" + (i+1) : "";
+    const medal   = MEDALS[i] ? MEDALS[i] + " " : "";
+    const tr = document.createElement("tr");
+    tr.style.animationDelay = (i * 45) + "ms";
+    tr.innerHTML =
+      '<td class="td-rank' + rankCls + '">' + (i+1) + '</td>' +
+      '<td class="td-name">' + medal + esc(p.name) + '</td>' +
+      '<td class="td-pts">'  + Number(p.points).toLocaleString("it-IT") + '</td>';
+    tableBody.appendChild(tr);
+  });
+}
+
+function esc(s) {
+  return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+
+copyBtn.addEventListener("click", () => {
+  if (!currentPlayers.length) return;
+  const csv = "Nome,Punti\n" + currentPlayers.map(p => p.name + "," + p.points).join("\n");
+  navigator.clipboard.writeText(csv).then(() => {
+    copyBtn.textContent = "✅ Copiato!";
+    setTimeout(() => { copyBtn.textContent = "📋 Copia CSV"; }, 2000);
+  });
+});
+</script>
+</body>
+</html>
