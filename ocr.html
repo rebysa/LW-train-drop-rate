@@ -139,31 +139,56 @@ readBtn.addEventListener("click", async () => {
 
     const players = [];
 
-    for(let i = 0; i < rows.length; i++){
+    
+   for(let i = 0; i < rows.length; i++){
 
-      const current = rows[i];
+  const current = rows[i];
 
-      // Se è un punteggio
-      if(/^\d[\d,]+$/.test(current)){
+  // Cerca numeri grossi tipo 79,547,896
+  const isPoints =
+    current.match(/[\d,.]{5,}/);
 
-        const points = current;
+  if(isPoints){
 
-        // Nome = 2 righe sopra
-        const name = rows[i - 2];
+    const points =
+      current.replace(/[^\d,]/g, "");
 
-        // Ignora robe strane OCR
-        if(name && !name.includes("Valhalla")){
+    // Cerca il nome sopra
+    let name = "";
 
-          players.push({
-            name,
-            points
-          });
+    for(let j = i - 1; j >= 0; j--){
 
-        }
+      const candidate = rows[j];
 
+      // ignora alleanza
+      if(
+        candidate.includes("Valhalla") ||
+        candidate.includes("[")
+      ){
+        continue;
       }
 
+      // ignora numeri
+      if(candidate.match(/[\d,.]{5,}/)){
+        continue;
+      }
+
+      name = candidate;
+      break;
     }
+
+    if(name){
+
+      players.push({
+        name,
+        points
+      });
+
+    }
+
+  }
+
+}
 
     renderTable(players);
 
