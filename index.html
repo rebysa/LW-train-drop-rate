@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="it">
+<script src="jsdelivr.net"></script>
 <head>
 <meta charset="UTF-8" />
 <title>LegX Train - Estrazione</title>
@@ -256,6 +257,41 @@ function render() {
 }
 
 window.onload = loadLang;
+
+<!-- Input per caricare lo screenshot -->
+<input type="file" id="screen-shot" accept="image/*">
+<button id="btn-read">Leggi Testo</button>
+
+<!-- Contenitore per riportare il testo a video -->
+<div id="output-text" style="white-space: pre-wrap; border: 1px solid #ccc; padding: 10px; margin-top: 10px;">
+  Il testo letto apparirà qui...
+</div>
+document.getElementById('btn-read').addEventListener('click', () => {
+  const fileInput = document.getElementById('screen-shot');
+  const outputDiv = document.getElementById('output-text');
+  
+  if (fileInput.files.length === 0) {
+    alert('Per favore, seleziona prima uno screenshot.');
+    return;
+  }
+
+  const file = fileInput.files[0];
+  outputDiv.innerText = "Analisi dello schermo in corso...";
+
+  // Avvia il riconoscimento testuale (italiano 'ita', o inglese 'eng')
+  Tesseract.recognize(
+    file,
+    'ita', 
+    { logger: m => console.log(m) } // Mostra il progresso in console
+  ).then(({ data: { text } }) => {
+    // Riporta il testo estratto direttamente a video
+    outputDiv.innerText = text.trim() || "Nessun testo trovato nello screenshot.";
+  }).catch(err => {
+    console.error(err);
+    outputDiv.innerText = "Errore durante la lettura dello schermo.";
+  });
+});
+
 </script>
 
 </body>
