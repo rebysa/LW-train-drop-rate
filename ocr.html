@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8" />
+
+<title>OCR Test</title>
+
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+
+<style>
+body{
+  background:#111827;
+  color:white;
+  font-family:sans-serif;
+  padding:20px;
+}
+
+button{
+  padding:10px 20px;
+  cursor:pointer;
+}
+
+#output-text{
+  margin-top:20px;
+  padding:10px;
+  border:1px solid #444;
+  white-space:pre-wrap;
+}
+</style>
+</head>
+
+<body>
+
+<h2>Upload Screenshot</h2>
+
+<input type="file" id="screen-shot" accept="image/*">
+
+<button id="btn-read">
+  Leggi Testo
+</button>
+
+<div id="output-text">
+  Il testo letto apparirà qui...
+</div>
+
+<script>
+
+document
+  .getElementById('btn-read')
+  .addEventListener('click', async () => {
+
+    const fileInput =
+      document.getElementById('screen-shot');
+
+    const outputDiv =
+      document.getElementById('output-text');
+
+    if (!fileInput.files.length) {
+      alert('Seleziona uno screenshot');
+      return;
+    }
+
+    const file = fileInput.files[0];
+
+    outputDiv.innerText =
+      "Analisi in corso...";
+
+    try {
+
+      const result =
+        await Tesseract.recognize(
+          file,
+          'eng',
+          {
+            logger: m => console.log(m)
+          }
+        );
+
+      outputDiv.innerText =
+        result.data.text;
+
+    } catch(err){
+
+      console.error(err);
+
+      outputDiv.innerText =
+        "Errore OCR";
+
+    }
+
+});
+
+</script>
+
+</body>
+</html>
