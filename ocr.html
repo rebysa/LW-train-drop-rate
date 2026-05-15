@@ -21,11 +21,9 @@
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
   body {
-    background: var(--bg);
-    color: #e2eaf5;
+    background: var(--bg); color: #e2eaf5;
     font-family: 'Rajdhani', sans-serif;
-    min-height: 100vh;
-    padding: 28px 16px 60px;
+    min-height: 100vh; padding: 28px 16px 60px;
     background-image:
       radial-gradient(ellipse 60% 40% at 50% 0%, rgba(56,189,248,0.08) 0%, transparent 70%),
       repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(30,48,80,0.3) 40px),
@@ -70,20 +68,25 @@
   }
   .file-item:last-child { border-bottom: none; }
   .fi-name { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .fi-status { font-size: .8rem; letter-spacing: 1px; min-width: 90px; text-align: right; }
+  .fi-status { font-size: .8rem; letter-spacing: 1px; min-width: 110px; text-align: right; }
   .fi-pending  { color: var(--silver); }
   .fi-scanning { color: var(--accent); }
   .fi-done     { color: var(--green); }
   .fi-error    { color: var(--red); }
 
   #prog-wrap {
-    display: none; max-width: 500px; margin: 0 auto 14px;
+    display: none; max-width: 500px; margin: 0 auto 4px;
     background: #111e35; border-radius: 8px; overflow: hidden; height: 8px;
   }
   #prog-bar {
     height: 100%; width: 0%;
     background: linear-gradient(90deg, #38bdf8, #0ea5e9);
-    transition: width .3s ease; border-radius: 8px;
+    transition: width .2s ease; border-radius: 8px;
+  }
+  #prog-label {
+    max-width: 500px; margin: 0 auto 10px;
+    text-align: center; font-size: .78rem; color: var(--silver);
+    letter-spacing: 1px; min-height: 18px;
   }
 
   .btn {
@@ -155,19 +158,12 @@
   .rank-2 { color: var(--silver); font-weight: 700; }
   .rank-3 { color: var(--bronze); font-weight: 700; }
 
-  /* Nome editabile: nessun sfondo visibile a riposo, bordo basso sottile all'hover/focus */
   .name-input {
-    background: transparent;
-    border: none;
+    background: transparent; border: none;
     border-bottom: 1px dashed transparent;
-    color: inherit;
-    font-family: 'Rajdhani', sans-serif;
-    font-size: 1rem;
-    font-weight: 700;
-    width: 100%;
-    outline: none;
-    padding: 2px 4px;
-    border-radius: 4px;
+    color: inherit; font-family: 'Rajdhani', sans-serif;
+    font-size: 1rem; font-weight: 700; width: 100%;
+    outline: none; padding: 2px 4px; border-radius: 4px;
     transition: background .15s, border-color .15s, box-shadow .15s;
     cursor: text;
   }
@@ -230,6 +226,7 @@
 
 <div id="file-list"></div>
 <div id="prog-wrap"><div id="prog-bar"></div></div>
+<div id="prog-label"></div>
 <button class="btn" id="readBtn" disabled>Analizza Screenshot</button>
 <div id="status"></div>
 
@@ -254,245 +251,308 @@
 
 <script>
 const $ = id => document.getElementById(id);
-const imageInput = $("imageInput"), readBtn = $("readBtn"), tableBody = $("tableBody"),
-      statusDiv = $("status"), dropZone = $("dropZone"), tableWrap = $("tableWrap"),
-      actions = $("actions"), copyBtn = $("copyBtn"), extractBtn = $("extractBtn"),
-      resetBtn = $("resetBtn"), progWrap = $("prog-wrap"), progBar = $("prog-bar"),
-      fileListEl = $("file-list"), canvas = $("canvas"), wbanner = $("winner-banner"),
-      wname = $("wname"), wpts = $("wpts");
+const imageInput=$("imageInput"), readBtn=$("readBtn"), tableBody=$("tableBody"),
+      statusDiv=$("status"), dropZone=$("dropZone"), tableWrap=$("tableWrap"),
+      actions=$("actions"), copyBtn=$("copyBtn"), extractBtn=$("extractBtn"),
+      resetBtn=$("resetBtn"), progWrap=$("prog-wrap"), progBar=$("prog-bar"),
+      progLabel=$("prog-label"), fileListEl=$("file-list"), canvas=$("canvas"),
+      wbanner=$("winner-banner"), wname=$("wname"), wpts=$("wpts");
 const ctx2d = canvas.getContext("2d");
 
 const MEDALS = ["🥇","🥈","🥉"];
-let files = [], players = [], winnerIdx = -1;
+let files=[], players=[], winnerIdx=-1;
 
 /* ── Drag & drop ── */
-dropZone.addEventListener("dragover",  e => { e.preventDefault(); dropZone.classList.add("over"); });
-dropZone.addEventListener("dragleave", () => dropZone.classList.remove("over"));
-dropZone.addEventListener("drop", e => {
+dropZone.addEventListener("dragover",  e=>{ e.preventDefault(); dropZone.classList.add("over"); });
+dropZone.addEventListener("dragleave", ()=>dropZone.classList.remove("over"));
+dropZone.addEventListener("drop", e=>{
   e.preventDefault(); dropZone.classList.remove("over");
-  addFiles([...e.dataTransfer.files].filter(f => f.type.startsWith("image/")));
+  addFiles([...e.dataTransfer.files].filter(f=>f.type.startsWith("image/")));
 });
-imageInput.addEventListener("change", () => { addFiles([...imageInput.files]); imageInput.value = ""; });
+imageInput.addEventListener("change",()=>{ addFiles([...imageInput.files]); imageInput.value=""; });
 
 function addFiles(newFiles) {
-  newFiles.forEach(f => {
-    if (!files.find(x => x.name === f.name && x.size === f.size)) files.push(f);
-  });
+  newFiles.forEach(f=>{ if (!files.find(x=>x.name===f.name&&x.size===f.size)) files.push(f); });
   renderFileList();
-  readBtn.disabled = !files.length;
-  players = []; winnerIdx = -1;
-  tableWrap.style.display = actions.style.display = "none";
-  wbanner.style.display = "none";
-  setStatus("", "");
+  readBtn.disabled=!files.length;
+  players=[]; winnerIdx=-1;
+  tableWrap.style.display=actions.style.display="none";
+  wbanner.style.display="none";
+  setStatus("","");
 }
 
 function renderFileList() {
-  if (!files.length) { fileListEl.style.display = "none"; return; }
-  fileListEl.style.display = "block";
-  fileListEl.innerHTML = files.map((f,i) =>
-    `<div class="file-item"><span>📄</span><span class="fi-name">${esc(f.name)}</span>
+  if (!files.length){ fileListEl.style.display="none"; return; }
+  fileListEl.style.display="block";
+  fileListEl.innerHTML=files.map((f,i)=>
+    `<div class="file-item"><span>📄</span>
+     <span class="fi-name">${esc(f.name)}</span>
      <span class="fi-status fi-pending" id="fis-${i}">In attesa</span></div>`
   ).join("");
 }
-
-function setFileStatus(i, cls, text) {
-  const el = $("fis-"+i);
-  if (el) { el.className = "fi-status "+cls; el.textContent = text; }
+function setFileStatus(i,cls,text){
+  const el=$("fis-"+i);
+  if(el){ el.className="fi-status "+cls; el.textContent=text; }
 }
 
-/* ── Pre-processing MULTI-PASS ──
-   Problema: righe oro/bronzo = testo colorato su sfondo colorato → grayscale standard le perde.
-   Soluzione: generiamo 3 versioni dell'immagine concatenate verticalmente:
-     1. Grayscale + contrasto standard (buono per testo scuro su sfondo chiaro)
-     2. Differenza canale rosso − (G+B)/2 con soglia (cattura testo scuro su sfondo giallo/bronzo)
-     3. Grayscale invertito con soglia (cattura testo chiaro su sfondo scuro)
-   Tesseract legge il collage: ogni versione copre i casi che le altre perdono.
-*/
-function preprocessImage(file) {
-  return new Promise(resolve => {
-    const img = new Image();
-    img.onload = () => {
-      const W = img.width * 2;
-      const H = img.height * 2;
-      const GAP = 30;
+/* ══════════════════════════════════════════════════════
+   PRE-PROCESSING: genera UN blob per ogni filtro
+   (3 OCR separati, niente collage → niente duplicati)
+   ══════════════════════════════════════════════════════ */
 
-      canvas.width  = W;
-      canvas.height = H * 3 + GAP * 2;
-
-      // Sfondo bianco
-      ctx2d.fillStyle = "#ffffff";
-      ctx2d.fillRect(0, 0, canvas.width, canvas.height);
-
-      // Disegna 3 copie
-      const offsets = [0, H + GAP, (H + GAP) * 2];
-      offsets.forEach(oy => ctx2d.drawImage(img, 0, oy, W, H));
-
-      // Versione 1 – Grayscale + contrasto
-      applyPixelFilter(0, offsets[0], W, H, (r,g,b) => {
-        let v = 0.299*r + 0.587*g + 0.114*b;
-        v = v > 128 ? Math.min(255, v*1.45) : Math.max(0, v*0.55);
-        return [v,v,v];
-      });
-
-      // Versione 2 – Canale rosso vs G+B (testo scuro su sfondo caldo: giallo, bronzo)
-      applyPixelFilter(0, offsets[1], W, H, (r,g,b) => {
-        // Testo scuro su sfondo giallo: r alto, g alto → differenza piccola
-        // Testo scuro: tutti i canali bassi relativamente
-        let v = 0.299*r + 0.587*g + 0.114*b;
-        // Aumenta molto il contrasto attorno alla soglia media
-        const mean = 160; // sfondo giallo/bronzo è chiaro
-        v = v < mean - 30 ? 0 : 255;
-        return [v,v,v];
-      });
-
-      // Versione 3 – Inversione + soglia (testo chiaro su sfondo qualsiasi)
-      applyPixelFilter(0, offsets[2], W, H, (r,g,b) => {
-        let v = 255 - (0.299*r + 0.587*g + 0.114*b);
-        v = v > 110 ? 255 : 0;
-        return [v,v,v];
-      });
-
-      canvas.toBlob(resolve, "image/png");
-    };
-    img.src = URL.createObjectURL(file);
+function loadImage(file){
+  return new Promise(resolve=>{
+    const img=new Image();
+    img.onload=()=>resolve(img);
+    img.src=URL.createObjectURL(file);
   });
 }
 
-function applyPixelFilter(x, y, w, h, fn) {
-  const id = ctx2d.getImageData(x, y, w, h);
-  const d = id.data;
-  for (let i = 0; i < d.length; i += 4) {
-    const [nr,ng,nb] = fn(d[i], d[i+1], d[i+2]);
-    d[i]=nr; d[i+1]=ng; d[i+2]=nb;
-  }
-  ctx2d.putImageData(id, x, y);
+/* Applica una funzione pixel→pixel su un ImageData e restituisce un Blob PNG */
+function imageDataToBlob(id){
+  canvas.width=id.width; canvas.height=id.height;
+  ctx2d.putImageData(id,0,0);
+  return new Promise(r=>canvas.toBlob(r,"image/png"));
 }
 
-/* ── OCR loop ── */
-readBtn.addEventListener("click", async () => {
-  if (!files.length) return;
-  readBtn.disabled = true;
-  players = []; winnerIdx = -1;
-  tableWrap.style.display = actions.style.display = "none";
-  wbanner.style.display = "none";
-  progWrap.style.display = "block";
+function applyFilter(srcId, fn){
+  const dst=new ImageData(new Uint8ClampedArray(srcId.data), srcId.width, srcId.height);
+  const d=dst.data;
+  for(let i=0;i<d.length;i+=4){
+    const [nr,ng,nb]=fn(d[i],d[i+1],d[i+2]);
+    d[i]=nr; d[i+1]=ng; d[i+2]=nb;
+  }
+  return dst;
+}
 
-  for (let i = 0; i < files.length; i++) {
-    const f = files[i];
-    setFileStatus(i, "fi-scanning", "⏳ Processing…");
-    setStatus(`<span class="spinner"></span> File ${i+1}/${files.length}: ${esc(f.name)}`, "");
-    progBar.style.width = "0%";
+async function getFilteredBlobs(file){
+  const img=await loadImage(file);
+  const W=img.width*2, H=img.height*2;
+  canvas.width=W; canvas.height=H;
+  ctx2d.drawImage(img,0,0,W,H);
+  const src=ctx2d.getImageData(0,0,W,H);
 
-    try {
-      const processed = await preprocessImage(f);
-      setFileStatus(i, "fi-scanning", "⏳ OCR…");
-      const result = await Tesseract.recognize(processed, "eng", {
-        logger: m => {
-          if (m.status === "recognizing text")
-            progBar.style.width = (m.progress*100).toFixed(0)+"%";
-        }
-      });
-      progBar.style.width = "100%";
-      console.log(`RAW OCR [${f.name}]:\n`, result.data.text);
-      const found = parseLeaderboard(result.data.text, f.name);
-      players.push(...found);
-      setFileStatus(i, "fi-done", `✅ ${found.length} trovati`);
-    } catch(err) {
+  /* Filtro 1 – Grayscale + contrasto standard
+     Ottimo per: testo nero/scuro su sfondo bianco/grigio chiaro */
+  const f1=applyFilter(src,(r,g,b)=>{
+    let v=0.299*r+0.587*g+0.114*b;
+    v=v>128?Math.min(255,v*1.45):Math.max(0,v*0.55);
+    return [v,v,v];
+  });
+
+  /* Filtro 2 – Soglia luminanza (threshold fisso a 155)
+     Ottimo per: testo scuro su sfondo colorato chiaro (giallo oro, rosa bronzo)
+     Sotto 155 → nero (testo), sopra → bianco (sfondo) */
+  const f2=applyFilter(src,(r,g,b)=>{
+    const v=0.299*r+0.587*g+0.114*b;
+    const t=v<155?0:255;
+    return [t,t,t];
+  });
+
+  /* Filtro 3 – Inversione + threshold
+     Ottimo per: testo chiaro su sfondo scuro (blu, grigio scuro) */
+  const f3=applyFilter(src,(r,g,b)=>{
+    const v=255-(0.299*r+0.587*g+0.114*b);
+    const t=v>110?255:0;
+    return [t,t,t];
+  });
+
+  return [
+    await imageDataToBlob(f1),
+    await imageDataToBlob(f2),
+    await imageDataToBlob(f3),
+  ];
+}
+
+/* ══════════════════════════════════════════════════════
+   OCR: 3 passate per file, risultati fusi con dedup fuzzy
+   ══════════════════════════════════════════════════════ */
+
+async function ocrBlob(blob, onProgress){
+  const r=await Tesseract.recognize(blob,"eng",{ logger:m=>{
+    if(m.status==="recognizing text") onProgress(m.progress);
+  }});
+  return r.data.text;
+}
+
+readBtn.addEventListener("click", async ()=>{
+  if(!files.length) return;
+  readBtn.disabled=true;
+  players=[]; winnerIdx=-1;
+  tableWrap.style.display=actions.style.display="none";
+  wbanner.style.display="none";
+  progWrap.style.display="block";
+
+  const PASS_NAMES=["Filtro standard","Soglia colore","Filtro inverso"];
+
+  for(let i=0;i<files.length;i++){
+    const f=files[i];
+    setFileStatus(i,"fi-scanning","⏳ Processing…");
+    setStatus(`<span class="spinner"></span> File ${i+1}/${files.length}: ${esc(f.name)}`,"");
+
+    try{
+      const blobs=await getFilteredBlobs(f);
+      const allResults=[];   // raccoglie candidati da tutti e 3 i pass
+
+      for(let p=0;p<blobs.length;p++){
+        progBar.style.width="0%";
+        progLabel.textContent=`Pass ${p+1}/3 · ${PASS_NAMES[p]}`;
+        const text=await ocrBlob(blobs[p], prog=>{
+          // progress 0..1 mappato su terzo della barra
+          progBar.style.width=((p*33)+(prog*33)).toFixed(0)+"%";
+        });
+        console.log(`RAW OCR [${f.name}] pass ${p+1}:\n`,text);
+        const found=parseLeaderboard(text, f.name);
+        allResults.push(...found);
+      }
+
+      progBar.style.width="100%";
+      progLabel.textContent="";
+
+      // Fondi i 3 pass: per ogni punteggio unico scegli il nome migliore
+      const merged=mergeResults(allResults);
+      players.push(...merged);
+      setFileStatus(i,"fi-done",`✅ ${merged.length} trovati`);
+
+    } catch(err){
       console.error(err);
-      setFileStatus(i, "fi-error", "❌ Errore");
+      progLabel.textContent="";
+      setFileStatus(i,"fi-error","❌ Errore");
     }
   }
 
-  progWrap.style.display = "none";
+  progWrap.style.display="none";
 
-  // Deduplica globale
-  const map = new Map();
-  players.forEach(p => {
-    const k = p.name.toLowerCase();
-    if (!map.has(k) || map.get(k).points < p.points) map.set(k, p);
+  // Deduplica globale cross-file (stesso nome → punteggio più alto)
+  const map=new Map();
+  players.forEach(p=>{
+    const k=normalizeKey(p.name);
+    if(!map.has(k)||map.get(k).points<p.points) map.set(k,p);
   });
-  players = [...map.values()].sort((a,b) => b.points - a.points);
+  players=[...map.values()].sort((a,b)=>b.points-a.points);
 
-  if (!players.length) {
-    setStatus("❌ Nessun giocatore trovato. Prova screenshot più nitidi.", "error");
+  if(!players.length){
+    setStatus("❌ Nessun giocatore trovato. Prova screenshot più nitidi.","error");
   } else {
     renderTable(players);
-    setStatus(`✅ ${players.length} giocatori da ${files.length} file`, "ok");
-    tableWrap.style.display = "block";
-    actions.style.display   = "flex";
+    setStatus(`✅ ${players.length} giocatori da ${files.length} file`,"ok");
+    tableWrap.style.display="block";
+    actions.style.display="flex";
   }
-  readBtn.disabled = false;
+  readBtn.disabled=false;
 });
 
-/* ── Parser ── */
-const SKIP = /gladiators|alliance|legion|valhalla|legx|leaderboard|ranking|score|total|points/i;
+/* ══════════════════════════════════════════════════════
+   MERGE dei 3 pass:
+   - Raggruppa per valore dei punti (chiave numerica)
+   - Per ogni gruppo scegli il nome con più occorrenze
+     o quello più lungo se c'è parità
+   ══════════════════════════════════════════════════════ */
+function mergeResults(list){
+  // Raggruppa per punti
+  const byPts=new Map();
+  list.forEach(p=>{
+    const k=p.points;
+    if(!byPts.has(k)) byPts.set(k,[]);
+    byPts.get(k).push(p.name);
+  });
 
-function isPointsLine(s) {
-  const digits = (s.match(/\d/g)||[]).length;
-  const seps   = (s.match(/[,. ]/g)||[]).length;
-  return digits >= 5 && (digits+seps)/s.length > 0.65;
+  const result=[];
+  byPts.forEach((names, pts)=>{
+    // Conta frequenza di ogni nome normalizzato
+    const freq=new Map();
+    names.forEach(n=>{
+      const k=normalizeKey(n);
+      freq.set(k,(freq.get(k)||{count:0,name:n}));
+      freq.get(k).count++;
+      // tieni il nome più lungo tra le varianti dello stesso gruppo
+      if(n.length>freq.get(k).name.length) freq.get(k).name=n;
+    });
+    // Scegli il gruppo con frequenza più alta (tie-break: nome più lungo)
+    let best=null;
+    freq.forEach(v=>{ if(!best||v.count>best.count||(v.count===best.count&&v.name.length>best.name.length)) best=v; });
+    if(best) result.push({ name:best.name, points:pts, source: list.find(p=>p.points===pts).source });
+  });
+
+  return result.sort((a,b)=>b.points-a.points);
 }
-function extractPoints(s) {
-  const c = s.replace(/[^\d]/g,"");
-  return c.length >= 5 ? parseInt(c,10) : NaN;
+
+/* Chiave normalizzata per confronti fuzzy: lowercase, senza spazi e simboli */
+function normalizeKey(s){
+  return s.toLowerCase().replace(/[^a-z0-9]/g,"");
 }
-function isValidName(s) {
-  if (!s || s.length < 2) return false;
-  if (/^\d{1,3}$/.test(s)) return false;
-  if (isPointsLine(s)) return false;
-  if (SKIP.test(s)) return false;
-  return (s.match(/[a-zA-Z]/g)||[]).length >= 2;
+
+/* ══════════════════════════════════════════════════════
+   PARSER
+   ══════════════════════════════════════════════════════ */
+const SKIP=/gladiators|alliance|legion|valhalla|legx|leaderboard|ranking|score|total|points/i;
+
+function isPointsLine(s){
+  const digits=(s.match(/\d/g)||[]).length;
+  const seps=(s.match(/[,. ]/g)||[]).length;
+  return digits>=5&&(digits+seps)/s.length>0.65;
 }
-function cleanName(s) {
+function extractPoints(s){
+  const c=s.replace(/[^\d]/g,"");
+  return c.length>=5?parseInt(c,10):NaN;
+}
+function isValidName(s){
+  if(!s||s.length<2) return false;
+  if(/^\d{1,3}$/.test(s)) return false;
+  if(isPointsLine(s)) return false;
+  if(SKIP.test(s)) return false;
+  return (s.match(/[a-zA-Z]/g)||[]).length>=2;
+}
+function cleanName(s){
   return s.replace(/[^a-zA-Z0-9 _\-\.]/g,"").replace(/\s+/g," ").trim();
 }
 
-function parseLeaderboard(text, sourceName) {
-  const lines = text.split("\n").map(l=>l.trim()).filter(Boolean);
+function parseLeaderboard(text, sourceName){
+  const lines=text.split("\n").map(l=>l.trim()).filter(Boolean);
   const results=[], usedPts=new Set(), usedName=new Set();
 
-  for (let i=0; i<lines.length; i++) {
-    if (!isPointsLine(lines[i]) || usedPts.has(i)) continue;
-    const pts = extractPoints(lines[i]);
-    if (isNaN(pts) || pts < 10000) continue;
+  for(let i=0;i<lines.length;i++){
+    if(!isPointsLine(lines[i])||usedPts.has(i)) continue;
+    const pts=extractPoints(lines[i]);
+    if(isNaN(pts)||pts<10000) continue;
 
     const order=[];
-    for (let d=-1;d>=-6;d--) order.push(i+d);
-    for (let d=1; d<=6; d++) order.push(i+d);
+    for(let d=-1;d>=-6;d--) order.push(i+d);
+    for(let d=1;d<=6;d++)   order.push(i+d);
 
     let name="";
-    for (const j of order) {
-      if (j<0||j>=lines.length||usedName.has(j)||usedPts.has(j)) continue;
+    for(const j of order){
+      if(j<0||j>=lines.length||usedName.has(j)||usedPts.has(j)) continue;
       const c=lines[j];
-      if (/[\[\]]/.test(c)||SKIP.test(c)||!isValidName(c)) continue;
+      if(/[\[\]]/.test(c)||SKIP.test(c)||!isValidName(c)) continue;
       const cleaned=cleanName(c);
-      if (cleaned.length<2) continue;
+      if(cleaned.length<2) continue;
       name=cleaned; usedName.add(j); break;
     }
 
-    if (name) { results.push({name, points:pts, source:sourceName}); usedPts.add(i); }
+    if(name){ results.push({name,points:pts,source:sourceName}); usedPts.add(i); }
   }
 
   results.sort((a,b)=>b.points-a.points);
   const seen=new Set();
-  return results.filter(p=>{ const k=p.name.toLowerCase(); if(seen.has(k))return false; seen.add(k);return true; });
+  return results.filter(p=>{ const k=normalizeKey(p.name); if(seen.has(k))return false; seen.add(k);return true; });
 }
 
-/* ── Render con input editabile ── */
-function renderTable(list, highlightIdx=-1) {
+/* ══════════════════════════════════════════════════════
+   RENDER tabella con nome editabile
+   ══════════════════════════════════════════════════════ */
+function renderTable(list, highlightIdx=-1){
   tableBody.innerHTML="";
-  list.forEach((p,i) => {
-    const rankCls = i<3?" rank-"+(i+1):"";
-    const medal   = MEDALS[i]?MEDALS[i]+" ":"";
-    const tr = document.createElement("tr");
+  list.forEach((p,i)=>{
+    const rankCls=i<3?" rank-"+(i+1):"";
+    const medal=MEDALS[i]?MEDALS[i]+" ":"";
+    const tr=document.createElement("tr");
     tr.style.animationDelay=(i*40)+"ms";
-    if (i===highlightIdx) tr.classList.add("winner");
+    if(i===highlightIdx) tr.classList.add("winner");
 
-    // Rank
     const rTd=document.createElement("td");
     rTd.className="td-rank"+rankCls; rTd.textContent=i+1;
 
-    // Nome editabile
     const nTd=document.createElement("td"); nTd.className="td-name";
     const inp=document.createElement("input");
     inp.type="text"; inp.className="name-input";
@@ -500,14 +560,11 @@ function renderTable(list, highlightIdx=-1) {
     inp.setAttribute("spellcheck","false");
     inp.addEventListener("change",()=>{
       const val=inp.value.replace(/^[🥇🥈🥉]\s*/,"").trim();
-      if (val) { players[i].name=val; if(i===winnerIdx) wname.textContent="🏆 "+val; }
+      if(val){ players[i].name=val; if(i===winnerIdx) wname.textContent="🏆 "+val; }
     });
     nTd.appendChild(inp);
 
-    // File sorgente
     const sTd=document.createElement("td"); sTd.className="td-src"; sTd.textContent=p.source;
-
-    // Punti
     const pTd=document.createElement("td"); pTd.className="td-pts";
     pTd.textContent=p.points.toLocaleString("it-IT");
 
@@ -518,11 +575,11 @@ function renderTable(list, highlightIdx=-1) {
 
 /* ── Estrazione random ── */
 extractBtn.addEventListener("click",()=>{
-  if (!players.length) return;
+  if(!players.length) return;
   let ticks=0;
   const iv=setInterval(()=>{
     renderTable(players,Math.floor(Math.random()*players.length));
-    if (++ticks>=20) {
+    if(++ticks>=20){
       clearInterval(iv);
       winnerIdx=Math.floor(Math.random()*players.length);
       renderTable(players,winnerIdx);
@@ -542,7 +599,7 @@ resetBtn.addEventListener("click",()=>{
 });
 
 copyBtn.addEventListener("click",()=>{
-  if (!players.length) return;
+  if(!players.length) return;
   const csv="Nome,Punti,File\n"+players.map(p=>`${p.name},${p.points},${p.source}`).join("\n");
   navigator.clipboard.writeText(csv).then(()=>{
     copyBtn.textContent="✅ Copiato!";
