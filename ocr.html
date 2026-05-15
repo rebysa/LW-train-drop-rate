@@ -40,7 +40,6 @@
   }
   header p { color: var(--silver); font-size: .85rem; letter-spacing: 2px; margin-top: 4px; }
 
-  /* UPLOAD MULTI */
   #imageInput { display: none; }
   .drop-zone {
     max-width: 500px; margin: 0 auto 18px;
@@ -55,13 +54,11 @@
     display: inline-block; padding: 9px 24px; border-radius: 8px;
     border: 2px solid var(--accent); color: var(--accent); background: transparent;
     font-family: 'Rajdhani', sans-serif; font-size: 1rem; font-weight: 700;
-    letter-spacing: 1px; cursor: pointer;
-    -webkit-tap-highlight-color: transparent;
+    letter-spacing: 1px; cursor: pointer; -webkit-tap-highlight-color: transparent;
     transition: background .2s, color .2s;
   }
   .pick-btn:active { background: var(--accent); color: #0a1628; }
 
-  /* File list */
   #file-list {
     display: none; max-width: 500px; margin: 0 auto 14px;
     background: var(--panel); border: 1px solid var(--border);
@@ -69,18 +66,16 @@
   }
   .file-item {
     display: flex; align-items: center; gap: 10px;
-    padding: 9px 14px; border-bottom: 1px solid var(--border);
-    font-size: .9rem;
+    padding: 9px 14px; border-bottom: 1px solid var(--border); font-size: .9rem;
   }
   .file-item:last-child { border-bottom: none; }
-  .file-item .fi-name { flex: 1; color: #e2eaf5; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .file-item .fi-status { font-size: .8rem; letter-spacing: 1px; min-width: 80px; text-align: right; }
+  .fi-name { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .fi-status { font-size: .8rem; letter-spacing: 1px; min-width: 90px; text-align: right; }
   .fi-pending  { color: var(--silver); }
   .fi-scanning { color: var(--accent); }
   .fi-done     { color: var(--green); }
   .fi-error    { color: var(--red); }
 
-  /* PROGRESS */
   #prog-wrap {
     display: none; max-width: 500px; margin: 0 auto 14px;
     background: #111e35; border-radius: 8px; overflow: hidden; height: 8px;
@@ -88,11 +83,9 @@
   #prog-bar {
     height: 100%; width: 0%;
     background: linear-gradient(90deg, #38bdf8, #0ea5e9);
-    transition: width .3s ease;
-    border-radius: 8px;
+    transition: width .3s ease; border-radius: 8px;
   }
 
-  /* BUTTONS */
   .btn {
     display: block; margin: 0 auto 16px; padding: 13px 36px;
     border: none; border-radius: 10px;
@@ -107,7 +100,6 @@
   .btn:active { transform: none; }
   .btn:disabled { background: #1e3050; color: #4a6080; box-shadow: none; cursor: not-allowed; transform: none; }
 
-  /* STATUS */
   #status {
     text-align: center; min-height: 22px; margin-bottom: 14px;
     font-size: .95rem; letter-spacing: 1px; color: var(--silver);
@@ -123,7 +115,6 @@
   }
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  /* TABLE */
   .tbl-wrap {
     display: none; max-width: 680px; margin: 0 auto;
     border-radius: 14px; overflow: hidden;
@@ -136,7 +127,7 @@
     text-transform: uppercase; color: var(--accent);
     border-bottom: 1px solid var(--border);
   }
-  thead th:nth-child(1) { text-align: center; }
+  thead th:nth-child(1) { text-align: center; width: 36px; }
   thead th:nth-child(2) { text-align: left; }
   thead th:nth-child(3) { text-align: left; color: var(--silver); }
   thead th:nth-child(4) { text-align: right; }
@@ -147,24 +138,54 @@
   }
   tbody tr:last-child { border-bottom: none; }
   tbody tr.winner {
-    background: rgba(245,200,66,0.12);
+    background: rgba(245,200,66,0.12) !important;
     border: 1px solid rgba(245,200,66,0.4);
     box-shadow: 0 0 18px rgba(245,200,66,0.15) inset;
   }
-  tbody tr.winner td { color: var(--gold) !important; font-weight: 700 !important; }
+  tbody tr.winner .name-input { color: var(--gold) !important; }
 
   @keyframes rowIn { from { opacity:0; transform:translateX(-8px); } to { opacity:1; transform:none; } }
 
-  td { padding: 10px 14px; }
+  td { padding: 8px 14px; }
   .td-rank { text-align: center; font-family: 'Share Tech Mono', monospace; width: 36px; }
   .td-name { font-weight: 700; font-size: 1rem; }
-  .td-src  { font-size: .8rem; color: var(--silver); max-width: 140px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .td-src  { font-size: .8rem; color: var(--silver); max-width: 130px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .td-pts  { text-align: right; font-family: 'Share Tech Mono', monospace; color: var(--accent); white-space: nowrap; }
   .rank-1 { color: var(--gold);   font-weight: 700; }
   .rank-2 { color: var(--silver); font-weight: 700; }
   .rank-3 { color: var(--bronze); font-weight: 700; }
 
-  /* ACTIONS */
+  /* Nome editabile: nessun sfondo visibile a riposo, bordo basso sottile all'hover/focus */
+  .name-input {
+    background: transparent;
+    border: none;
+    border-bottom: 1px dashed transparent;
+    color: inherit;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    width: 100%;
+    outline: none;
+    padding: 2px 4px;
+    border-radius: 4px;
+    transition: background .15s, border-color .15s, box-shadow .15s;
+    cursor: text;
+  }
+  .name-input:hover {
+    border-bottom-color: rgba(56,189,248,0.5);
+    background: rgba(56,189,248,0.05);
+  }
+  .name-input:focus {
+    border-bottom-color: var(--accent);
+    background: rgba(56,189,248,0.08);
+    box-shadow: 0 2px 0 rgba(56,189,248,0.25);
+  }
+  tbody tr.winner .name-input:focus {
+    border-bottom-color: var(--gold);
+    background: rgba(245,200,66,0.08);
+    box-shadow: 0 2px 0 rgba(245,200,66,0.25);
+  }
+
   .actions {
     display: none; max-width: 680px; margin: 12px auto 0;
     gap: 10px; justify-content: flex-end; flex-wrap: wrap;
@@ -179,15 +200,14 @@
   .btn-sm.highlight { border-color: var(--gold); color: var(--gold); }
   .btn-sm.highlight:hover { background: rgba(245,200,66,0.08); }
 
-  /* WINNER BANNER */
   #winner-banner {
     display: none; max-width: 680px; margin: 14px auto 0;
     background: rgba(245,200,66,0.1); border: 1px solid rgba(245,200,66,0.35);
     border-radius: 12px; padding: 16px 20px; text-align: center;
   }
-  #winner-banner .wlabel { font-size: .8rem; letter-spacing: 2px; color: var(--silver); text-transform: uppercase; }
-  #winner-banner .wname  { font-size: 1.6rem; font-weight: 700; color: var(--gold); margin: 4px 0; }
-  #winner-banner .wpts   { font-family: 'Share Tech Mono', monospace; color: var(--accent); }
+  .wlabel { font-size: .8rem; letter-spacing: 2px; color: var(--silver); text-transform: uppercase; }
+  .wname  { font-size: 1.6rem; font-weight: 700; color: var(--gold); margin: 4px 0; }
+  .wpts   { font-family: 'Share Tech Mono', monospace; color: var(--accent); }
 
   #canvas { display: none; }
 </style>
@@ -196,37 +216,26 @@
 
 <header>
   <h1>⚔ Last War Scanner</h1>
-  <p>OCR Locale · Multi-File · Estrazione Random</p>
+  <p>OCR Multi-Pass · Multi-File · Estrazione Random</p>
 </header>
 
 <canvas id="canvas"></canvas>
-
-<!-- Accetta più file -->
 <input type="file" id="imageInput" accept="image/*" multiple/>
+
 <div class="drop-zone" id="dropZone">
   <span class="icon">📷</span>
   <p>Trascina uno o più screenshot qui</p>
   <label for="imageInput" class="pick-btn">Scegli immagini</label>
 </div>
 
-<!-- Elenco file caricati -->
 <div id="file-list"></div>
-
 <div id="prog-wrap"><div id="prog-bar"></div></div>
-
 <button class="btn" id="readBtn" disabled>Analizza Screenshot</button>
 <div id="status"></div>
 
 <div class="tbl-wrap" id="tableWrap">
   <table>
-    <thead>
-      <tr>
-        <th>#</th>
-        <th>Giocatore</th>
-        <th>File</th>
-        <th>Punti</th>
-      </tr>
-    </thead>
+    <thead><tr><th>#</th><th>Giocatore</th><th>File</th><th>Punti</th></tr></thead>
     <tbody id="tableBody"></tbody>
   </table>
 </div>
@@ -244,29 +253,17 @@
 </div>
 
 <script>
-const imageInput = document.getElementById("imageInput");
-const readBtn    = document.getElementById("readBtn");
-const tableBody  = document.getElementById("tableBody");
-const statusDiv  = document.getElementById("status");
-const dropZone   = document.getElementById("dropZone");
-const tableWrap  = document.getElementById("tableWrap");
-const actions    = document.getElementById("actions");
-const copyBtn    = document.getElementById("copyBtn");
-const extractBtn = document.getElementById("extractBtn");
-const resetBtn   = document.getElementById("resetBtn");
-const progWrap   = document.getElementById("prog-wrap");
-const progBar    = document.getElementById("prog-bar");
-const fileList   = document.getElementById("file-list");
-const canvas     = document.getElementById("canvas");
-const ctx        = canvas.getContext("2d");
-const wbanner    = document.getElementById("winner-banner");
-const wname      = document.getElementById("wname");
-const wpts       = document.getElementById("wpts");
+const $ = id => document.getElementById(id);
+const imageInput = $("imageInput"), readBtn = $("readBtn"), tableBody = $("tableBody"),
+      statusDiv = $("status"), dropZone = $("dropZone"), tableWrap = $("tableWrap"),
+      actions = $("actions"), copyBtn = $("copyBtn"), extractBtn = $("extractBtn"),
+      resetBtn = $("resetBtn"), progWrap = $("prog-wrap"), progBar = $("prog-bar"),
+      fileListEl = $("file-list"), canvas = $("canvas"), wbanner = $("winner-banner"),
+      wname = $("wname"), wpts = $("wpts");
+const ctx2d = canvas.getContext("2d");
 
 const MEDALS = ["🥇","🥈","🥉"];
-let files   = [];   // FileList array
-let players = [];   // risultato aggregato
-let winnerIdx = -1;
+let files = [], players = [], winnerIdx = -1;
 
 /* ── Drag & drop ── */
 dropZone.addEventListener("dragover",  e => { e.preventDefault(); dropZone.classList.add("over"); });
@@ -275,99 +272,129 @@ dropZone.addEventListener("drop", e => {
   e.preventDefault(); dropZone.classList.remove("over");
   addFiles([...e.dataTransfer.files].filter(f => f.type.startsWith("image/")));
 });
-imageInput.addEventListener("change", () => {
-  addFiles([...imageInput.files]);
-  imageInput.value = "";
-});
+imageInput.addEventListener("change", () => { addFiles([...imageInput.files]); imageInput.value = ""; });
 
 function addFiles(newFiles) {
   newFiles.forEach(f => {
-    if (!files.find(x => x.name === f.name && x.size === f.size)) {
-      files.push(f);
-    }
+    if (!files.find(x => x.name === f.name && x.size === f.size)) files.push(f);
   });
   renderFileList();
-  readBtn.disabled = files.length === 0;
-  // reset risultati precedenti
+  readBtn.disabled = !files.length;
   players = []; winnerIdx = -1;
-  tableWrap.style.display = "none";
-  actions.style.display   = "none";
-  wbanner.style.display   = "none";
+  tableWrap.style.display = actions.style.display = "none";
+  wbanner.style.display = "none";
   setStatus("", "");
 }
 
 function renderFileList() {
-  if (!files.length) { fileList.style.display = "none"; return; }
-  fileList.style.display = "block";
-  fileList.innerHTML = files.map((f, i) =>
-    `<div class="file-item" id="fi-${i}">
-      <span>📄</span>
-      <span class="fi-name">${esc(f.name)}</span>
-      <span class="fi-status fi-pending" id="fis-${i}">In attesa</span>
-    </div>`
+  if (!files.length) { fileListEl.style.display = "none"; return; }
+  fileListEl.style.display = "block";
+  fileListEl.innerHTML = files.map((f,i) =>
+    `<div class="file-item"><span>📄</span><span class="fi-name">${esc(f.name)}</span>
+     <span class="fi-status fi-pending" id="fis-${i}">In attesa</span></div>`
   ).join("");
 }
 
 function setFileStatus(i, cls, text) {
-  const el = document.getElementById("fis-" + i);
-  if (!el) return;
-  el.className = "fi-status " + cls;
-  el.textContent = text;
+  const el = $("fis-"+i);
+  if (el) { el.className = "fi-status "+cls; el.textContent = text; }
 }
 
-/* ── Pre-processing ── */
+/* ── Pre-processing MULTI-PASS ──
+   Problema: righe oro/bronzo = testo colorato su sfondo colorato → grayscale standard le perde.
+   Soluzione: generiamo 3 versioni dell'immagine concatenate verticalmente:
+     1. Grayscale + contrasto standard (buono per testo scuro su sfondo chiaro)
+     2. Differenza canale rosso − (G+B)/2 con soglia (cattura testo scuro su sfondo giallo/bronzo)
+     3. Grayscale invertito con soglia (cattura testo chiaro su sfondo scuro)
+   Tesseract legge il collage: ogni versione copre i casi che le altre perdono.
+*/
 function preprocessImage(file) {
   return new Promise(resolve => {
     const img = new Image();
     img.onload = () => {
-      const scale = 2;
-      canvas.width  = img.width  * scale;
-      canvas.height = img.height * scale;
-      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-      const id = ctx.getImageData(0, 0, canvas.width, canvas.height);
-      const d = id.data;
-      for (let i = 0; i < d.length; i += 4) {
-        let v = 0.299 * d[i] + 0.587 * d[i+1] + 0.114 * d[i+2];
-        v = v > 128 ? Math.min(255, v * 1.3) : Math.max(0, v * 0.7);
-        d[i] = d[i+1] = d[i+2] = v;
-      }
-      ctx.putImageData(id, 0, 0);
+      const W = img.width * 2;
+      const H = img.height * 2;
+      const GAP = 30;
+
+      canvas.width  = W;
+      canvas.height = H * 3 + GAP * 2;
+
+      // Sfondo bianco
+      ctx2d.fillStyle = "#ffffff";
+      ctx2d.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Disegna 3 copie
+      const offsets = [0, H + GAP, (H + GAP) * 2];
+      offsets.forEach(oy => ctx2d.drawImage(img, 0, oy, W, H));
+
+      // Versione 1 – Grayscale + contrasto
+      applyPixelFilter(0, offsets[0], W, H, (r,g,b) => {
+        let v = 0.299*r + 0.587*g + 0.114*b;
+        v = v > 128 ? Math.min(255, v*1.45) : Math.max(0, v*0.55);
+        return [v,v,v];
+      });
+
+      // Versione 2 – Canale rosso vs G+B (testo scuro su sfondo caldo: giallo, bronzo)
+      applyPixelFilter(0, offsets[1], W, H, (r,g,b) => {
+        // Testo scuro su sfondo giallo: r alto, g alto → differenza piccola
+        // Testo scuro: tutti i canali bassi relativamente
+        let v = 0.299*r + 0.587*g + 0.114*b;
+        // Aumenta molto il contrasto attorno alla soglia media
+        const mean = 160; // sfondo giallo/bronzo è chiaro
+        v = v < mean - 30 ? 0 : 255;
+        return [v,v,v];
+      });
+
+      // Versione 3 – Inversione + soglia (testo chiaro su sfondo qualsiasi)
+      applyPixelFilter(0, offsets[2], W, H, (r,g,b) => {
+        let v = 255 - (0.299*r + 0.587*g + 0.114*b);
+        v = v > 110 ? 255 : 0;
+        return [v,v,v];
+      });
+
       canvas.toBlob(resolve, "image/png");
     };
     img.src = URL.createObjectURL(file);
   });
 }
 
-/* ── OCR multi-file ── */
+function applyPixelFilter(x, y, w, h, fn) {
+  const id = ctx2d.getImageData(x, y, w, h);
+  const d = id.data;
+  for (let i = 0; i < d.length; i += 4) {
+    const [nr,ng,nb] = fn(d[i], d[i+1], d[i+2]);
+    d[i]=nr; d[i+1]=ng; d[i+2]=nb;
+  }
+  ctx2d.putImageData(id, x, y);
+}
+
+/* ── OCR loop ── */
 readBtn.addEventListener("click", async () => {
   if (!files.length) return;
   readBtn.disabled = true;
   players = []; winnerIdx = -1;
-  tableWrap.style.display = "none";
-  actions.style.display   = "none";
-  wbanner.style.display   = "none";
-  progWrap.style.display  = "block";
+  tableWrap.style.display = actions.style.display = "none";
+  wbanner.style.display = "none";
+  progWrap.style.display = "block";
 
   for (let i = 0; i < files.length; i++) {
     const f = files[i];
-    setFileStatus(i, "fi-scanning", "⏳ Scansione…");
+    setFileStatus(i, "fi-scanning", "⏳ Processing…");
     setStatus(`<span class="spinner"></span> File ${i+1}/${files.length}: ${esc(f.name)}`, "");
     progBar.style.width = "0%";
 
     try {
       const processed = await preprocessImage(f);
+      setFileStatus(i, "fi-scanning", "⏳ OCR…");
       const result = await Tesseract.recognize(processed, "eng", {
         logger: m => {
           if (m.status === "recognizing text")
-            progBar.style.width = (m.progress * 100).toFixed(0) + "%";
+            progBar.style.width = (m.progress*100).toFixed(0)+"%";
         }
       });
       progBar.style.width = "100%";
-
-      const rawText = result.data.text;
-      console.log(`RAW OCR [${f.name}]:\n`, rawText);
-
-      const found = parseLeaderboard(rawText, f.name);
+      console.log(`RAW OCR [${f.name}]:\n`, result.data.text);
+      const found = parseLeaderboard(result.data.text, f.name);
       players.push(...found);
       setFileStatus(i, "fi-done", `✅ ${found.length} trovati`);
     } catch(err) {
@@ -378,10 +405,11 @@ readBtn.addEventListener("click", async () => {
 
   progWrap.style.display = "none";
 
-  // Deduplicazione globale per nome (mantieni punteggio più alto)
+  // Deduplica globale
   const map = new Map();
   players.forEach(p => {
-    if (!map.has(p.name) || map.get(p.name).points < p.points) map.set(p.name, p);
+    const k = p.name.toLowerCase();
+    if (!map.has(k) || map.get(k).points < p.points) map.set(k, p);
   });
   players = [...map.values()].sort((a,b) => b.points - a.points);
 
@@ -389,191 +417,141 @@ readBtn.addEventListener("click", async () => {
     setStatus("❌ Nessun giocatore trovato. Prova screenshot più nitidi.", "error");
   } else {
     renderTable(players);
-    setStatus(`✅ Totale: ${players.length} giocatori da ${files.length} file`, "ok");
+    setStatus(`✅ ${players.length} giocatori da ${files.length} file`, "ok");
     tableWrap.style.display = "block";
     actions.style.display   = "flex";
   }
   readBtn.disabled = false;
 });
 
-/* ── Parser MIGLIORATO ──
-   Strategia aggiornata:
-   1. Si cerca ogni coppia (nome + punti) guardando sia righe prima che dopo i punti
-   2. Si usano finestre più ampie (fino a 5 righe)
-   3. Si accettano nomi con anche solo 2 lettere alfabetiche (es. "Blu BC")
-   4. Il filtro alleanza ora salta solo righe che contengono [ ] e sono lunghe >3 parole
-      oppure contengono "Gladiators","Alliance","Legion" ecc.
-*/
+/* ── Parser ── */
+const SKIP = /gladiators|alliance|legion|valhalla|legx|leaderboard|ranking|score|total|points/i;
+
+function isPointsLine(s) {
+  const digits = (s.match(/\d/g)||[]).length;
+  const seps   = (s.match(/[,. ]/g)||[]).length;
+  return digits >= 5 && (digits+seps)/s.length > 0.65;
+}
+function extractPoints(s) {
+  const c = s.replace(/[^\d]/g,"");
+  return c.length >= 5 ? parseInt(c,10) : NaN;
+}
+function isValidName(s) {
+  if (!s || s.length < 2) return false;
+  if (/^\d{1,3}$/.test(s)) return false;
+  if (isPointsLine(s)) return false;
+  if (SKIP.test(s)) return false;
+  return (s.match(/[a-zA-Z]/g)||[]).length >= 2;
+}
+function cleanName(s) {
+  return s.replace(/[^a-zA-Z0-9 _\-\.]/g,"").replace(/\s+/g," ").trim();
+}
+
 function parseLeaderboard(text, sourceName) {
-  const lines = text.split("\n").map(l => l.trim()).filter(Boolean);
+  const lines = text.split("\n").map(l=>l.trim()).filter(Boolean);
+  const results=[], usedPts=new Set(), usedName=new Set();
 
-  // Parole da ignorare come nomi (clan/alleanza/UI)
-  const SKIP_WORDS = /gladiators|alliance|legion|valhalla|legx|leaderboard|ranking|score|total|points/i;
-  const reTag      = /[\[\]]/;
-  const reNum      = /^\d{1,3}$/;
-
-  // Estrae il valore numerico da una stringa tipo "51,854,504"
-  function extractPoints(s) {
-    const clean = s.replace(/[^\d]/g, "");
-    return clean.length >= 5 ? parseInt(clean, 10) : NaN;
-  }
-
-  // Una riga è "riga punti" se >70% dei caratteri sono cifre/separatori e ha ≥5 cifre
-  function isPointsLine(s) {
-    const digits = (s.match(/\d/g) || []).length;
-    const seps   = (s.match(/[,. ]/g) || []).length;
-    return digits >= 5 && (digits + seps) / s.length > 0.7;
-  }
-
-  // Una riga è un nome candidato valido
-  function isValidName(s) {
-    if (!s || s.length < 2) return false;
-    if (reNum.test(s)) return false;          // solo rank
-    if (isPointsLine(s)) return false;        // è una riga punti
-    if (SKIP_WORDS.test(s)) return false;     // parola clan/UI
-    // Deve avere almeno 2 caratteri alfabetici
-    const letters = (s.match(/[a-zA-Z]/g) || []).length;
-    if (letters < 2) return false;
-    return true;
-  }
-
-  // Pulisce il nome da spazzatura OCR
-  function cleanName(s) {
-    return s
-      .replace(/[^a-zA-Z0-9 _\-\.]/g, "")
-      .replace(/\s+/g, " ")
-      .trim();
-  }
-
-  const results  = [];
-  const usedPts  = new Set();
-  const usedName = new Set();
-
-  for (let i = 0; i < lines.length; i++) {
-    if (!isPointsLine(lines[i])) continue;
-    if (usedPts.has(i)) continue;
-
+  for (let i=0; i<lines.length; i++) {
+    if (!isPointsLine(lines[i]) || usedPts.has(i)) continue;
     const pts = extractPoints(lines[i]);
     if (isNaN(pts) || pts < 10000) continue;
 
-    // Cerca nome: prima controlla le righe PRECEDENTI (finestra -5..−1)
-    // poi le righe SUCCESSIVE (finestra +1..+5)
-    // Questo cattura sia layout "nome sopra" che "nome sotto"
-    let name = "";
-    const searchRanges = [];
-    for (let d = -1; d >= -5; d--) searchRanges.push(i + d);
-    for (let d = 1;  d <= 5;  d++)  searchRanges.push(i + d);
+    const order=[];
+    for (let d=-1;d>=-6;d--) order.push(i+d);
+    for (let d=1; d<=6; d++) order.push(i+d);
 
-    for (const j of searchRanges) {
-      if (j < 0 || j >= lines.length) continue;
-      if (usedName.has(j)) continue;
-
-      const candidate = lines[j];
-
-      // Salta righe tag alleanza (contengono [ ] O parole clan)
-      if (reTag.test(candidate) || SKIP_WORDS.test(candidate)) continue;
-
-      if (!isValidName(candidate)) continue;
-
-      const cleaned = cleanName(candidate);
-      if (cleaned.length < 2) continue;
-
-      // Non riusare un nome già assegnato ad un altro punteggio
-      if (usedPts.has(j)) continue;
-
-      name = cleaned;
-      usedName.add(j);
-      break;
+    let name="";
+    for (const j of order) {
+      if (j<0||j>=lines.length||usedName.has(j)||usedPts.has(j)) continue;
+      const c=lines[j];
+      if (/[\[\]]/.test(c)||SKIP.test(c)||!isValidName(c)) continue;
+      const cleaned=cleanName(c);
+      if (cleaned.length<2) continue;
+      name=cleaned; usedName.add(j); break;
     }
 
-    if (name) {
-      results.push({ name, points: pts, source: sourceName });
-      usedPts.add(i);
-    }
+    if (name) { results.push({name, points:pts, source:sourceName}); usedPts.add(i); }
   }
 
-  // Ordina per punti decrescenti
-  results.sort((a, b) => b.points - a.points);
-
-  // Deduplica per nome (stesso file)
-  const seen = new Set();
-  return results.filter(p => {
-    const key = p.name.toLowerCase();
-    if (seen.has(key)) return false;
-    seen.add(key); return true;
-  });
+  results.sort((a,b)=>b.points-a.points);
+  const seen=new Set();
+  return results.filter(p=>{ const k=p.name.toLowerCase(); if(seen.has(k))return false; seen.add(k);return true; });
 }
 
-/* ── Render tabella ── */
-function renderTable(list, highlightIdx = -1) {
-  tableBody.innerHTML = "";
-  list.forEach((p, i) => {
-    const rankCls = i < 3 ? " rank-" + (i+1) : "";
-    const medal   = MEDALS[i] ? MEDALS[i] + " " : "";
+/* ── Render con input editabile ── */
+function renderTable(list, highlightIdx=-1) {
+  tableBody.innerHTML="";
+  list.forEach((p,i) => {
+    const rankCls = i<3?" rank-"+(i+1):"";
+    const medal   = MEDALS[i]?MEDALS[i]+" ":"";
     const tr = document.createElement("tr");
-    tr.style.animationDelay = (i * 40) + "ms";
-    if (i === highlightIdx) tr.classList.add("winner");
-    tr.innerHTML =
-      `<td class="td-rank${rankCls}">${i+1}</td>` +
-      `<td class="td-name">${medal}${esc(p.name)}</td>` +
-      `<td class="td-src">${esc(p.source)}</td>` +
-      `<td class="td-pts">${p.points.toLocaleString("it-IT")}</td>`;
+    tr.style.animationDelay=(i*40)+"ms";
+    if (i===highlightIdx) tr.classList.add("winner");
+
+    // Rank
+    const rTd=document.createElement("td");
+    rTd.className="td-rank"+rankCls; rTd.textContent=i+1;
+
+    // Nome editabile
+    const nTd=document.createElement("td"); nTd.className="td-name";
+    const inp=document.createElement("input");
+    inp.type="text"; inp.className="name-input";
+    inp.value=medal+p.name;
+    inp.setAttribute("spellcheck","false");
+    inp.addEventListener("change",()=>{
+      const val=inp.value.replace(/^[🥇🥈🥉]\s*/,"").trim();
+      if (val) { players[i].name=val; if(i===winnerIdx) wname.textContent="🏆 "+val; }
+    });
+    nTd.appendChild(inp);
+
+    // File sorgente
+    const sTd=document.createElement("td"); sTd.className="td-src"; sTd.textContent=p.source;
+
+    // Punti
+    const pTd=document.createElement("td"); pTd.className="td-pts";
+    pTd.textContent=p.points.toLocaleString("it-IT");
+
+    tr.append(rTd,nTd,sTd,pTd);
     tableBody.appendChild(tr);
   });
 }
 
 /* ── Estrazione random ── */
-extractBtn.addEventListener("click", () => {
+extractBtn.addEventListener("click",()=>{
   if (!players.length) return;
-  let ticks = 0;
-  const maxTicks = 20;
-  const interval = setInterval(() => {
-    renderTable(players, Math.floor(Math.random() * players.length));
-    ticks++;
-    if (ticks >= maxTicks) {
-      clearInterval(interval);
-      winnerIdx = Math.floor(Math.random() * players.length);
-      renderTable(players, winnerIdx);
-      const w = players[winnerIdx];
-      wname.textContent = "🏆 " + w.name;
-      wpts.textContent  = w.points.toLocaleString("it-IT") + " pt";
-      wbanner.style.display = "block";
-      wbanner.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  let ticks=0;
+  const iv=setInterval(()=>{
+    renderTable(players,Math.floor(Math.random()*players.length));
+    if (++ticks>=20) {
+      clearInterval(iv);
+      winnerIdx=Math.floor(Math.random()*players.length);
+      renderTable(players,winnerIdx);
+      const w=players[winnerIdx];
+      wname.textContent="🏆 "+w.name;
+      wpts.textContent=w.points.toLocaleString("it-IT")+" pt";
+      wbanner.style.display="block";
+      wbanner.scrollIntoView({behavior:"smooth",block:"nearest"});
     }
-  }, 80);
+  },80);
 });
 
-/* ── Reset ── */
-resetBtn.addEventListener("click", () => {
-  files = []; players = []; winnerIdx = -1;
-  fileList.style.display  = "none";
-  tableWrap.style.display = "none";
-  actions.style.display   = "none";
-  wbanner.style.display   = "none";
-  readBtn.disabled = true;
-  setStatus("", "");
+resetBtn.addEventListener("click",()=>{
+  files=[]; players=[]; winnerIdx=-1;
+  fileListEl.style.display=tableWrap.style.display=actions.style.display="none";
+  wbanner.style.display="none"; readBtn.disabled=true; setStatus("","");
 });
 
-/* ── CSV ── */
-copyBtn.addEventListener("click", () => {
+copyBtn.addEventListener("click",()=>{
   if (!players.length) return;
-  const csv = "Nome,Punti,File\n" + players.map(p => `${p.name},${p.points},${p.source}`).join("\n");
-  navigator.clipboard.writeText(csv).then(() => {
-    copyBtn.textContent = "✅ Copiato!";
-    setTimeout(() => { copyBtn.textContent = "📋 Copia CSV"; }, 2000);
+  const csv="Nome,Punti,File\n"+players.map(p=>`${p.name},${p.points},${p.source}`).join("\n");
+  navigator.clipboard.writeText(csv).then(()=>{
+    copyBtn.textContent="✅ Copiato!";
+    setTimeout(()=>{ copyBtn.textContent="📋 Copia CSV"; },2000);
   });
 });
 
-/* ── Utils ── */
-function setStatus(html, cls) {
-  statusDiv.innerHTML = html;
-  statusDiv.className = cls;
-}
-function esc(s) {
-  return String(s).replace(/[&<>"']/g, c =>
-    ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])
-  );
-}
+function setStatus(html,cls){ statusDiv.innerHTML=html; statusDiv.className=cls; }
+function esc(s){ return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
 </script>
 </body>
 </html>
