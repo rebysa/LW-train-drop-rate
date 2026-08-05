@@ -82,13 +82,14 @@
     outline: none; transition: border-color .15s;
   }
   .range-field input:focus { border-color: var(--accent); }
-  input.excl {
+  .excl {
     width: 100%; padding: 9px 10px; border-radius: 8px;
     border: 1px solid var(--border); background: #0a1424; color: #e2eaf5;
     font-family: 'Rajdhani', sans-serif; font-size: 1rem;
     outline: none; transition: border-color .15s;
   }
-  input.excl:focus { border-color: var(--accent); }
+  .excl:focus { border-color: var(--accent); }
+  textarea.excl { resize: vertical; min-height: 90px; line-height: 1.4; }
   .range-hint { font-size: .72rem; color: var(--muted); margin-top: 8px; text-align: center; letter-spacing: .5px; }
 
   #file-list {
@@ -272,6 +273,12 @@
     <div class="range-hint">Lo stesso giocatore letto più volte (2 filtri × ogni screenshot) appare una volta sola. Non rimuove mai giocatori con punteggi diversi. Togli la spunta per vedere ogni singola lettura e revisionare a mano.</div>
   </div>
 
+  <div class="range-box">
+    <div class="range-title">📋 Nomi dell'alleanza (uno per riga)</div>
+    <textarea id="roster" class="excl" rows="5" placeholder="Nuclear Maximus&#10;Kilfx&#10;Tink3r Z&#10;Saxoninette&#10;..." autocomplete="off" spellcheck="false"></textarea>
+    <div class="range-hint">Incolla qui i nomi esatti dei membri: il tool corregge le letture OCR sul nome giusto (es. "axoninette" → "Saxoninette"). Facoltativo ma molto consigliato. Salvato nel browser.</div>
+  </div>
+
   <div id="file-list"></div>
   <div id="prog-wrap"><div id="prog-bar"></div></div>
   <div id="prog-label"></div>
@@ -310,7 +317,7 @@ const imageInput=$("imageInput"), readBtn=$("readBtn"), tableBody=$("tableBody")
       resetBtn=$("resetBtn"), addBtn=$("addBtn"), progWrap=$("prog-wrap"), progBar=$("prog-bar"),
       progLabel=$("prog-label"), fileListEl=$("file-list"), canvas=$("canvas"),
       wbanner=$("winner-banner"), wname=$("wname"), wpts=$("wpts"),
-      minPtsEl=$("minPts"), maxPtsEl=$("maxPts"), myNameEl=$("myName"), mergeToggleEl=$("mergeToggle");
+      minPtsEl=$("minPts"), maxPtsEl=$("maxPts"), myNameEl=$("myName"), mergeToggleEl=$("mergeToggle"), rosterEl=$("roster");
 const ctx2d = canvas.getContext("2d", { willReadFrequently: true });
 
 /* players: { name, points, source, eligible, reason } — solo membri [legX]
@@ -324,6 +331,13 @@ myNameEl.addEventListener("blur",()=>{
   rebuild();
 });
 mergeToggleEl.addEventListener("change", ()=>rebuild());
+
+/* rosa dell'alleanza: caricata/salvata nel browser */
+try{ rosterEl.value=localStorage.getItem("legx-roster")||""; }catch(_){}
+rosterEl.addEventListener("blur",()=>{
+  try{ localStorage.setItem("legx-roster", rosterEl.value); }catch(_){}
+  rebuild();
+});
 
 /* ══════════════════════════════════════════════════════
    RANGE PUNTI (input formattati con separatore migliaia)
@@ -609,6 +623,28 @@ function canonicalizeName(name){
   return name;
 }
 
+/* Rosa dell'alleanza: nomi esatti incollati dall'utente */
+let roster=[];
+function loadRoster(){
+  roster=(rosterEl.value||"").split("\n").map(s=>s.trim()).filter(Boolean)
+    .map(s=>({orig:s, key:normalizeKey(s)})).filter(r=>r.key);
+}
+/* Aggancia una lettura OCR al nome di rosa più vicino (entro soglia); altrimenti tiene il nome OCR */
+function snapToRoster(name){
+  if(!roster.length) return name;
+  const k=normalizeKey(name);
+  if(!k) return name;
+  const exact=roster.find(r=>r.key===k);
+  if(exact) return exact.orig;
+  let best=null, bestD=Infinity;
+  roster.forEach(r=>{ const d=levenshtein(k,r.key); if(d<bestD){ bestD=d; best=r; } });
+  if(best){
+    const thr=Math.max(2, Math.round(best.key.length*0.34));   // tolleranza proporzionale alla lunghezza
+    if(bestD<=thr) return best.orig;
+  }
+  return name;   // nessun match affidabile → tieni il nome letto
+}
+
 /* Due gruppi si fondono SOLO se il nome normalizzato è identico.
    Niente fuzzy: "TinkerZ" e "Tink3r Z" differiscono di 1 carattere ma sono persone diverse. */
 function sameNameExact(a,b){
@@ -714,7 +750,8 @@ readBtn.addEventListener("click", async ()=>{
 
 /* Fonde le letture "tuo nome" in una riga sola, poi ricalcola l'ammissibilità */
 function rebuild(){
-  const canon = rawDets.map(d => ({ ...d, name: canonicalizeName(d.name) }));
+  loadRoster();
+  const canon = rawDets.map(d => ({ ...d, name: snapToRoster(canonicalizeName(d.name)) }));
   let base;
   if(mergeToggleEl.checked){
     base = mergeDetections(canon);                       // fusione sicura (per punteggio / nome identico)
