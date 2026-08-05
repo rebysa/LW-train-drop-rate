@@ -1,239 +1,303 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-<meta charset="UTF-8" />
-<title>LegX Train - Estrazione</title>
-
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>LegX Train — Estrazione</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet"/>
 <style>
-body {
-  margin: 0;
-  font-family: 'Segoe UI', sans-serif;
-  background: radial-gradient(circle at top, #0b1220, #050814);
-  color: white;
-  text-align: center;
-}
+  :root {
+    --gold:   #f5c842;
+    --bg:     #090e1a;
+    --panel:  #0d1628;
+    --border: #1e3050;
+    --accent: #38bdf8;
+    --violet: #6366f1;
+    --silver: #a8b8d0;
+    --muted:  #4a6080;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
 
-/* ===== HEADER ===== */
-.header {
-  padding: 20px 10px;
-}
-
-.logo {
-  width: 90px;
-  height: 90px;
-  border-radius: 50%;
-  border: 2px solid #38bdf8;
-  box-shadow: 0 0 20px #38bdf8;
-  object-fit: cover;
-}
-
-.title {
-  font-size: 22px;
-  margin-top: 10px;
-  font-weight: bold;
-  color: #38bdf8;
-}
-
-/* ===== CONTAINER ===== */
-.container {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-  padding: 10px;
-}
-
-.box {
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(56,189,248,0.2);
-  border-radius: 16px;
-  padding: 15px;
-  backdrop-filter: blur(8px);
-  box-shadow: 0 0 20px rgba(56,189,248,0.08);
-}
-
-h3 {
-  margin-bottom: 10px;
-  margin-top: 0px;
-  color: #7dd3fc;
-}
-
-.row {
-  display: flex;
-  justify-content: space-between;
-  font-size: 13px;
-  padding: 4px 0;
-  opacity: 0.9;
-}
-
-/* ===== RESULT ===== */
-#result {
-  font-size: 55px;
-  margin: 25px 0;
-  font-weight: bold;
-  color: #38bdf8;
-  text-shadow: 0 0 15px #38bdf8;
-  transition: transform 0.2s ease;
-}
-
-/* ===== BUTTON ===== */
-button {
-  padding: 16px;
-  width: 90%;
-  max-width: 400px;
-  font-size: 18px;
-  border: none;
-  border-radius: 14px;
-  background: linear-gradient(135deg, #38bdf8, #6366f1);
-  color: white;
-  font-weight: bold;
-  cursor: pointer;
-  box-shadow: 0 0 15px rgba(99,102,241,0.4);
-}
-
-/* ===== FOOTER ===== */
-footer {
-  margin-top: 15px;
-  margin-bottom: 20px;
-  font-size: 12px;
-  opacity: 0.5;
-}
-
-.i18n-content {
-  text-align: left;
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 10px 20px;
-}
-
-  .weekRules {
-    margin-left: 30px
+  body {
+    background: var(--bg); color: #e2eaf5;
+    font-family: 'Rajdhani', sans-serif;
+    min-height: 100vh; padding: 26px 16px 50px; text-align: center;
+    background-image:
+      radial-gradient(ellipse 60% 40% at 50% 0%, rgba(56,189,248,0.08) 0%, transparent 70%),
+      repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(30,48,80,0.3) 40px),
+      repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(30,48,80,0.15) 40px);
   }
 
-/* ===== DESKTOP ===== */
-@media(min-width:768px){
+  header h1 {
+    font-size: 1.7rem; font-weight: 700; letter-spacing: 2px;
+    color: var(--accent); text-shadow: 0 0 24px rgba(56,189,248,0.5);
+  }
+  header p { color: var(--silver); font-size: .85rem; letter-spacing: 2px; margin-top: 4px; }
+
+  /* ── Pannelli tabelle ── */
   .container {
-    flex-direction: row;
-    justify-content: center;
+    display: flex; flex-direction: column; gap: 16px;
+    max-width: 720px; margin: 24px auto 0;
   }
+  @media (min-width: 760px) { .container { flex-direction: row; justify-content: center; align-items: stretch; } }
 
   .box {
-    width: 340px;
+    flex: 1; display: flex; flex-direction: column;
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 16px; padding: 16px 18px;
+    box-shadow: 0 0 30px rgba(0,0,0,0.4);
   }
-}
+  /* la tabella riempie il box e centra le righe: box di pari altezza, niente buco in basso */
+  .tbl { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+  .box h3 {
+    margin-bottom: 12px; color: var(--accent);
+    font-size: 1.05rem; letter-spacing: 1.5px; text-transform: uppercase;
+  }
+  .row {
+    display: flex; justify-content: space-between; align-items: baseline;
+    font-size: .92rem; padding: 5px 6px; border-bottom: 1px solid rgba(30,48,80,0.5);
+  }
+  .row:last-child { border-bottom: none; }
+  .row b { font-weight: 700; color: #e2eaf5; }
+  .row .pct { font-family: 'Share Tech Mono', monospace; color: var(--silver); }
+  .row .each { font-size: .72rem; color: var(--muted); letter-spacing: .5px; }
+
+  /* ── Zona estrazione ── */
+  .draw {
+    max-width: 720px; margin: 26px auto 0;
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 18px; padding: 22px 18px;
+  }
+  .reels { display: flex; justify-content: center; gap: 22px; margin-bottom: 6px; flex-wrap: wrap; }
+  .reel { min-width: 130px; }
+  .reel .lbl {
+    font-size: .8rem; letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--silver); margin-bottom: 4px;
+  }
+  .reel .val {
+    font-family: 'Share Tech Mono', monospace; font-size: 3.4rem; font-weight: 700;
+    line-height: 1; transition: transform .12s ease;
+  }
+  .reel.train .val  { color: var(--accent); text-shadow: 0 0 18px rgba(56,189,248,0.5); }
+  .reel.vip   .val  { color: var(--gold);   text-shadow: 0 0 18px rgba(245,200,66,0.5); }
+  .reel .val.pulse { transform: scale(1.18); }
+
+  .explain {
+    min-height: 22px; margin: 10px auto 4px; max-width: 520px;
+    font-size: .92rem; color: var(--silver); letter-spacing: .5px;
+  }
+  .explain b.train { color: var(--accent); }
+  .explain b.vip   { color: var(--gold); }
+
+  button.estrai {
+    margin: 16px auto 0; padding: 15px 40px; width: 90%; max-width: 380px;
+    border: none; border-radius: 14px;
+    background: linear-gradient(135deg, var(--accent), var(--violet));
+    color: #fff; font-family: 'Rajdhani', sans-serif;
+    font-size: 1.15rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
+    cursor: pointer; box-shadow: 0 0 20px rgba(99,102,241,0.4);
+    transition: opacity .2s, transform .15s;
+  }
+  button.estrai:hover { opacity: .92; transform: translateY(-1px); }
+  button.estrai:active { transform: none; }
+  button.estrai:disabled { opacity: .55; cursor: not-allowed; transform: none; }
+
+  /* ── Storico ── */
+  .history {
+    max-width: 720px; margin: 20px auto 0;
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 14px; padding: 12px 16px; text-align: left;
+    display: none;
+  }
+  .history .htitle {
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: .78rem; letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--accent); margin-bottom: 8px;
+  }
+  .history .clear {
+    font-size: .72rem; color: var(--muted); background: none; border: none;
+    cursor: pointer; letter-spacing: 1px; text-transform: uppercase;
+  }
+  .history .clear:hover { color: var(--accent); }
+  .hitem {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 6px 4px; border-bottom: 1px solid rgba(30,48,80,0.5);
+    font-size: .9rem; animation: rowIn .25s ease both;
+  }
+  .hitem:last-child { border-bottom: none; }
+  .hitem .pair { font-family: 'Share Tech Mono', monospace; }
+  .hitem .pair .t { color: var(--accent); }
+  .hitem .pair .v { color: var(--gold); }
+  .hitem .time { font-size: .74rem; color: var(--muted); }
+  @keyframes rowIn { from { opacity:0; transform:translateX(-6px); } to { opacity:1; transform:none; } }
+
+  footer { margin-top: 26px; font-size: .74rem; color: var(--muted); letter-spacing: 1px; }
 </style>
 </head>
-
 <body>
 
-<!-- ===== HEADER ===== -->
-<div class="header">
-  <div class="title">🗡️ LegX - Valhalla Gladiators 🛡️</div>
-</div>
+<header>
+  <h1>🗡️ [legX] Valhalla Gladiators 🛡️</h1>
+  <p>Lucky Train · Estrazione posizioni</p>
+</header>
 
-<!-- ===== CONTENUTO ===== -->
 <div class="container">
-
   <div class="box">
     <h3>🚆 Conducente</h3>
-    <div class="content">
-      <div class="row"><b>1</b><span>30%</span></div>
-      <div class="row"><b>2</b><span>20%</span></div>
-      <div class="row"><b>3</b><span>10%</span></div>
-      <div class="row"><b>4</b><span>7%</span></div>
-      <div class="row"><b>5</b><span>2%</span></div>
-      <div class="row"><b>6-10</b><span>2%</span></div>
-      <div class="row"><b>11-30</b><span>1%</span></div>
-    </div>
+    <div id="tableConducente" class="tbl"></div>
   </div>
-
   <div class="box">
     <h3>👑 VIP</h3>
-    <div class="content">
-      <div class="row"><b>1</b><span>11.11%</span></div>
-      <div class="row"><b>2</b><span>10.37%</span></div>
-      <div class="row"><b>3</b><span>9.63%</span></div>
-      <div class="row"><b>4</b><span>8.89%</span></div>
-      <div class="row"><b>5</b><span>8.15%</span></div>
-      <div class="row"><b>6</b><span>7.41%</span></div>
-      <div class="row"><b>7</b><span>6.67%</span></div>
-      <div class="row"><b>8</b><span>5.93%</span></div>
-      <div class="row"><b>9</b><span>5.19%</span></div>
-      <div class="row"><b>10</b><span>4.44%</span></div>
-      <div class="row"><b>11</b><span>3.70%</span></div>
-      <div class="row"><b>12</b><span>2.96%</span></div>
-      <div class="row"><b>13</b><span>2.22%</span></div>
-      <div class="row"><b>14</b><span>1.48%</span></div>
-      <div class="row"><b>15</b><span>0.74%</span></div>
-      <div class="row"><b>16-30</b><span>0.74%</span></div>
-    </div>
+    <div id="tableVip" class="tbl"></div>
   </div>
-
 </div>
 
-<!-- ===== RESULT ===== -->
-<div id="result">-</div>
+<div class="draw">
+  <div class="reels">
+    <div class="reel train">
+      <div class="lbl">🚆 Conducente</div>
+      <div class="val" id="valTrain">–</div>
+    </div>
+    <div class="reel vip">
+      <div class="lbl">👑 VIP</div>
+      <div class="val" id="valVip">–</div>
+    </div>
+  </div>
+  <div class="explain" id="explain">Premi ESTRAI per assegnare il treno di oggi.</div>
+  <button class="estrai" id="estraiBtn">🎰 Estrai</button>
+</div>
 
-<button onclick="estrai()">🎰 ESTRAI</button>
-<footer>
-© 2026 Rebysa -  All Rights Reserved
-</footer>
+<div class="history" id="history">
+  <div class="htitle">
+    <span>🕑 Ultime estrazioni</span>
+    <button class="clear" id="clearHist">Svuota</button>
+  </div>
+  <div id="histList"></div>
+</div>
+
+<footer>© 2026 Rebysa · All Rights Reserved</footer>
 
 <script>
-const pesiConducente = [];
-for (let i = 1; i <= 30; i++) {
-  if (i === 1) pesiConducente.push(30);
-  else if (i === 2) pesiConducente.push(20);
-  else if (i === 3) pesiConducente.push(10);
-  else if (i === 4) pesiConducente.push(7);
-  else if (i === 5) pesiConducente.push(2);
-  else if (i >= 6 && i <= 10) pesiConducente.push(2);
-  else pesiConducente.push(1);
+const $ = id => document.getElementById(id);
+
+/* ══════════════════════════════════════════════════════
+   UNICA FONTE: bande peso → tabella E logica di estrazione
+   (così non possono mai divergere)
+   { pos: etichetta, w: peso, count: quante posizioni nella banda }
+   ══════════════════════════════════════════════════════ */
+const CONDUCENTE_BANDS = [
+  { pos: "1",     w: 30 },
+  { pos: "2",     w: 20 },
+  { pos: "3",     w: 10 },
+  { pos: "4",     w: 7  },
+  { pos: "5",     w: 2  },
+  { pos: "6-10",  w: 2, count: 5  },
+  { pos: "11-30", w: 1, count: 20 },
+];
+
+// VIP: posizioni 1..15 con peso 15..1 decrescente, poi 16-30 peso 1
+const VIP_BANDS = [];
+for (let i = 1; i <= 15; i++) VIP_BANDS.push({ pos: String(i), w: 16 - i });
+VIP_BANDS.push({ pos: "16-30", w: 1, count: 15 });
+
+/* Espande le bande nell'array di pesi per posizione (indice 0 = pos 1) */
+function expandWeights(bands) {
+  const out = [];
+  bands.forEach(b => { const n = b.count || 1; for (let k = 0; k < n; k++) out.push(b.w); });
+  return out;
+}
+const wConducente = expandWeights(CONDUCENTE_BANDS);
+const wVip        = expandWeights(VIP_BANDS);
+
+/* Rende la tabella dalle bande (percentuali identiche all'originale) */
+function renderTable(el, bands) {
+  el.innerHTML = bands.map(b => {
+    const each = (b.count && b.count > 1) ? `<span class="each"> ciascuno</span>` : "";
+    return `<div class="row"><b>${b.pos}</b><span class="pct">${b.w}%${each}</span></div>`;
+  }).join("");
+}
+renderTable($("tableConducente"), CONDUCENTE_BANDS);
+renderTable($("tableVip"), VIP_BANDS);
+
+/* Estrazione pesata: ritorna la posizione (1-based) */
+function estraiNumero(pesi) {
+  const totale = pesi.reduce((a, b) => a + b, 0);
+  let r = Math.random() * totale, acc = 0;
+  for (let i = 0; i < pesi.length; i++) { acc += pesi[i]; if (r < acc) return i + 1; }
+  return pesi.length;
 }
 
-const pesiVIP = [];
-for (let i = 15; i >= 1; i--) pesiVIP.push(i);
-for (let i = 16; i <= 30; i++) pesiVIP.push(1);
+/* ══════════════════════════════════════════════════════
+   ESTRAZIONE con animazione a rullo + spiegazione + storico
+   ══════════════════════════════════════════════════════ */
+const valTrain = $("valTrain"), valVip = $("valVip"),
+      explain = $("explain"), estraiBtn = $("estraiBtn"),
+      historyEl = $("history"), histList = $("histList");
 
-function estraiNumero(pesi){
-  const totale = pesi.reduce((a,b)=>a+b,0);
-  const r = Math.random()*totale;
+let history = [];
+try { history = JSON.parse(localStorage.getItem("legx-train-history") || "[]"); } catch (_) {}
+renderHistory();
 
-  let acc = 0;
-  for(let i=0;i<pesi.length;i++){
-    acc += pesi[i];
-    if(r <= acc) return i+1;
-  }
+function pulse(el){ el.classList.add("pulse"); setTimeout(()=>el.classList.remove("pulse"), 130); }
+
+function estrai() {
+  estraiBtn.disabled = true;
+  explain.textContent = "🎲 Estrazione in corso…";
+
+  const finalTrain = estraiNumero(wConducente);
+  const finalVip   = estraiNumero(wVip);
+
+  // fase "rullo": numeri casuali che girano, poi si fermano
+  let ticks = 0;
+  const iv = setInterval(() => {
+    valTrain.textContent = 1 + Math.floor(Math.random() * 30);
+    valVip.textContent   = 1 + Math.floor(Math.random() * 30);
+    pulse(valTrain); pulse(valVip);
+    if (++ticks >= 16) {
+      clearInterval(iv);
+      valTrain.textContent = finalTrain;
+      valVip.textContent   = finalVip;
+      pulse(valTrain); pulse(valVip);
+      showResult(finalTrain, finalVip);
+      pushHistory(finalTrain, finalVip);
+      estraiBtn.disabled = false;
+    }
+  }, 70);
 }
 
-function estrai(){
-  const c = estraiNumero(pesiConducente);
-  const v = estraiNumero(pesiVIP);
-
-  const el = document.getElementById("result");
-
-  el.style.transform = "scale(1.2)";
-  setTimeout(()=>el.style.transform="scale(1)",200);
-
-  el.innerHTML = `🚆 ${c} &nbsp;&nbsp; 👑 ${v}`;
+function showResult(t, v) {
+  explain.innerHTML =
+    `Il treno va a chi è in posizione <b class="train">${t}</b> · ` +
+    `posto VIP alla posizione <b class="vip">${v}</b>.`;
 }
 
-let translations = {};
-
-async function loadLang() {
-  const res = await fetch("./locales/it.json");
-  translations = await res.json();
-  render();
+function pushHistory(t, v) {
+  const now = new Date();
+  const time = now.toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" });
+  const date = now.toLocaleDateString("it-IT", { day: "2-digit", month: "2-digit" });
+  history.unshift({ t, v, when: `${date} ${time}` });
+  history = history.slice(0, 10);
+  try { localStorage.setItem("legx-train-history", JSON.stringify(history)); } catch (_) {}
+  renderHistory();
 }
 
-function render() {
-  document.querySelectorAll("[data-i18n]").forEach(el => {
-    const key = el.getAttribute("data-i18n");
-   el.innerText = translations[key] ?? "";
-  });
+function renderHistory() {
+  if (!history.length) { historyEl.style.display = "none"; return; }
+  historyEl.style.display = "block";
+  histList.innerHTML = history.map(h =>
+    `<div class="hitem">
+       <span class="pair">🚆 <span class="t">${h.t}</span> &nbsp; 👑 <span class="v">${h.v}</span></span>
+       <span class="time">${h.when}</span>
+     </div>`
+  ).join("");
 }
 
-window.onload = loadLang;
+estraiBtn.addEventListener("click", estrai);
+$("clearHist").addEventListener("click", () => {
+  history = [];
+  try { localStorage.removeItem("legx-train-history"); } catch (_) {}
+  renderHistory();
+});
 </script>
-
 </body>
 </html>
