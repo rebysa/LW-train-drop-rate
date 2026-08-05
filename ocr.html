@@ -521,12 +521,27 @@ function extractLegxFromText(text, source){
 }
 
 function cleanName(s){
-  return String(s)
+  let out = String(s)
     .replace(/^\s*\d{1,3}\s+/,"")               // via il rank iniziale
     .replace(/\bWAR\b/gi,"")                     // via il badge "WAR"
     .replace(/[^a-zA-Z0-9 _\-.]/g,"")            // solo caratteri latini/base
     .replace(/\s+[._\-]+(?=\s|$)/g," ")          // via i token di sola punteggiatura (es. " .")
     .replace(/\s+/g," ").trim();
+
+  // rimuove i token "eco" dell'OCR: duplicati esatti e frammenti contenuti in un token più lungo
+  // ("pede Spede77" → "Spede77", "axoninette inett" → "axoninette", "Ek topolakateke lakat" → "Ek topolakateke")
+  const toks = out.split(" ").filter(Boolean);
+  if(toks.length>1){
+    const kept=[];
+    toks.forEach((t,i)=>{
+      const tl=t.toLowerCase();
+      if(kept.some(k=>k.toLowerCase()===tl)) return;                                    // duplicato esatto
+      if(t.length>=3 && toks.some((u,j)=>j!==i && u.length>t.length && u.toLowerCase().includes(tl))) return; // frammento-eco
+      kept.push(t);
+    });
+    out = kept.join(" ").trim();
+  }
+  return out;
 }
 function isValidName(s){
   if(!s||s.length<2) return false;
