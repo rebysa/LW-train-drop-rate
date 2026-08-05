@@ -82,6 +82,13 @@
     outline: none; transition: border-color .15s;
   }
   .range-field input:focus { border-color: var(--accent); }
+  input.excl {
+    width: 100%; padding: 9px 10px; border-radius: 8px;
+    border: 1px solid var(--border); background: #0a1424; color: #e2eaf5;
+    font-family: 'Rajdhani', sans-serif; font-size: 1rem;
+    outline: none; transition: border-color .15s;
+  }
+  input.excl:focus { border-color: var(--accent); }
   .range-hint { font-size: .72rem; color: var(--muted); margin-top: 8px; text-align: center; letter-spacing: .5px; }
 
   #file-list {
@@ -251,6 +258,12 @@
     <div class="range-hint">Partecipa al sorteggio solo chi ha punti nell'intervallo. Lascia vuoto un campo per togliere quel limite.</div>
   </div>
 
+  <div class="range-box">
+    <div class="range-title">👤 Il tuo nome (una sola riga)</div>
+    <input type="text" id="myName" class="excl" placeholder="es. rebysa" autocomplete="off" spellcheck="false"/>
+    <div class="range-hint">Tu compari in fondo a ogni screenshot, quindi verresti letto più volte. Scrivi qui il tuo nome in-game per apparire in una riga sola.</div>
+  </div>
+
   <div id="file-list"></div>
   <div id="prog-wrap"><div id="prog-bar"></div></div>
   <div id="prog-label"></div>
@@ -262,7 +275,7 @@
   <table>
     <thead><tr>
       <th class="c-ok">🎲</th><th class="c-name">Giocatore [legX]</th>
-      <th class="c-src">File</th><th class="c-pts">Punti</th>
+      <th class="c-pts">Punti</th>
     </tr></thead>
     <tbody id="tableBody"></tbody>
   </table>
@@ -288,11 +301,19 @@ const imageInput=$("imageInput"), readBtn=$("readBtn"), tableBody=$("tableBody")
       resetBtn=$("resetBtn"), progWrap=$("prog-wrap"), progBar=$("prog-bar"),
       progLabel=$("prog-label"), fileListEl=$("file-list"), canvas=$("canvas"),
       wbanner=$("winner-banner"), wname=$("wname"), wpts=$("wpts"),
-      minPtsEl=$("minPts"), maxPtsEl=$("maxPts");
+      minPtsEl=$("minPts"), maxPtsEl=$("maxPts"), myNameEl=$("myName");
 const ctx2d = canvas.getContext("2d", { willReadFrequently: true });
 
-/* players: { name, points, source, eligible, reason } — solo membri [legX] */
-let files=[], players=[], winnerIdx=-1, ocrWorker=null, currentLabel="";
+/* players: { name, points, source, eligible, reason } — solo membri [legX]
+   mergedPlayers = lista completa dopo il merge; players = filtrata (escluso il tuo nome) */
+let files=[], rawDets=[], mergedPlayers=[], players=[], winnerIdx=-1, ocrWorker=null, currentLabel="";
+
+/* nome da escludere: caricato/salvato nel browser */
+try{ myNameEl.value=localStorage.getItem("legx-my-name")||""; }catch(_){}
+myNameEl.addEventListener("blur",()=>{
+  try{ localStorage.setItem("legx-my-name", myNameEl.value.trim()); }catch(_){}
+  rebuild();
+});
 
 /* ══════════════════════════════════════════════════════
    RANGE PUNTI (input formattati con separatore migliaia)
@@ -326,7 +347,7 @@ function addFiles(newFiles) {
   newFiles.forEach(f=>{ if (!files.find(x=>x.name===f.name&&x.size===f.size)) files.push(f); });
   renderFileList();
   readBtn.disabled=!files.length;
-  players=[]; winnerIdx=-1;
+  rawDets=[]; mergedPlayers=[]; players=[]; winnerIdx=-1;
   tableWrap.style.display=actions.style.display="none";
   wbanner.style.display="none";
   setStatus("","");
@@ -528,6 +549,31 @@ function modeOrMax(nums){                         // numero più frequente, tie 
   f.forEach((c,n)=>{ if(c>bc||(c===bc&&n>best)){ best=n; bc=c; } });
   return best;
 }
+/* distanza di edit (Levenshtein): serve a riconoscere piccoli errori OCR sul tuo nome */
+function levenshtein(a,b){
+  const m=a.length, n=b.length;
+  if(!m) return n; if(!n) return m;
+  let prev=[...Array(n+1).keys()], cur=new Array(n+1);
+  for(let i=1;i<=m;i++){
+    cur[0]=i;
+    for(let j=1;j<=n;j++){
+      cur[j]=Math.min(prev[j]+1, cur[j-1]+1, prev[j-1]+(a[i-1]===b[j-1]?0:1));
+    }
+    [prev,cur]=[cur,prev];
+  }
+  return prev[n];
+}
+/* Se una lettura combacia (anche con 1 errore OCR) col tuo nome, la normalizza a quello:
+   così tutte le tue righe si fondono in una sola invece di duplicarsi */
+function canonicalizeName(name){
+  const me=(myNameEl.value||"").trim();
+  if(!me) return name;
+  const meK=normalizeKey(me), nK=normalizeKey(name);
+  if(!nK) return name;
+  if(nK===meK || levenshtein(nK,meK)<=1) return me;
+  return name;
+}
+
 function mergeDetections(dets){
   const by=new Map();
   dets.forEach(d=>{
@@ -550,7 +596,7 @@ function mergeDetections(dets){
 readBtn.addEventListener("click", async ()=>{
   if(!files.length) return;
   readBtn.disabled=true;
-  players=[]; winnerIdx=-1;
+  rawDets=[]; mergedPlayers=[]; players=[]; winnerIdx=-1;
   tableWrap.style.display=actions.style.display="none";
   wbanner.style.display="none"; progWrap.style.display="block";
 
@@ -586,9 +632,10 @@ readBtn.addEventListener("click", async ()=>{
   progWrap.style.display="none";
   await terminateWorker();
 
-  players=mergeDetections(allDets);
+  rawDets=allDets;
+  rebuild();
 
-  if(!players.length){
+  if(!mergedPlayers.length){
     setStatus("❌ Nessun membro [legX] trovato. Prova screenshot più nitidi o verifica la console (F12).","error");
   } else {
     recomputeEligibility();
@@ -598,9 +645,19 @@ readBtn.addEventListener("click", async ()=>{
   readBtn.disabled=false;
 });
 
+/* Fonde le letture "tuo nome" in una riga sola, poi ricalcola l'ammissibilità */
+function rebuild(){
+  const canon = rawDets.map(d => ({ ...d, name: canonicalizeName(d.name) }));
+  mergedPlayers = mergeDetections(canon);
+  recomputeEligibility();
+}
+
 /* Ricalcola ammissibilità in base al range e ri-renderizza */
 function recomputeEligibility(){
-  if(!players.length) return;
+  if(!mergedPlayers.length) return;
+  players = mergedPlayers.slice();
+  winnerIdx=-1; wbanner.style.display="none";
+
   const { min, max }=getRange();
   players.forEach(p=>{
     if(p.points<min){ p.eligible=false; p.reason="pochi punti"; }
@@ -635,12 +692,10 @@ function renderTable(list, highlightIdx=-1){
     });
     nTd.appendChild(inp);
 
-    const sTd=document.createElement("td"); sTd.className="td-src"; sTd.textContent=p.source;
-
     const pTd=document.createElement("td"); pTd.className="td-pts";
     pTd.innerHTML = fmt(p.points) + (p.eligible?"":`<span class="pts-reason">${p.reason}</span>`);
 
-    tr.append(okTd,nTd,sTd,pTd);
+    tr.append(okTd,nTd,pTd);
     tableBody.appendChild(tr);
   });
 }
@@ -669,7 +724,7 @@ extractBtn.addEventListener("click",()=>{
 });
 
 resetBtn.addEventListener("click", async ()=>{
-  files=[]; players=[]; winnerIdx=-1;
+  files=[]; rawDets=[]; mergedPlayers=[]; players=[]; winnerIdx=-1;
   fileListEl.style.display=tableWrap.style.display=actions.style.display="none";
   wbanner.style.display="none"; readBtn.disabled=true; setStatus("","");
   await terminateWorker();
@@ -677,8 +732,8 @@ resetBtn.addEventListener("click", async ()=>{
 
 copyBtn.addEventListener("click",()=>{
   if(!players.length) return;
-  const csv="Nome,Punti,Ammissibile,File\n"+players.map(p=>
-    `${p.name},${p.points},${p.eligible?"si":"no"},${p.source}`).join("\n");
+  const csv="Nome,Punti,Ammissibile\n"+players.map(p=>
+    `${p.name},${p.points},${p.eligible?"si":"no"}`).join("\n");
   navigator.clipboard.writeText(csv).then(()=>{
     copyBtn.textContent="✅ Copiato!";
     setTimeout(()=>{ copyBtn.textContent="📋 Copia CSV"; },2000);
