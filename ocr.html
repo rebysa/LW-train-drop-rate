@@ -231,7 +231,7 @@
 <header>
   <h1>⚔ [legX] Valhalla Gladiators</h1>
   <p>Estrazione tra i membri dell'alleanza · OCR Last War</p>
-  <p class="credit">All rights reserved · rebysa</p>
+  <p class="credit">All rights reserved · rebysa 🌹</p>
 </header>
 
 <canvas id="canvas"></canvas>
@@ -333,12 +333,12 @@ myNameEl.addEventListener("blur",()=>{
 mergeToggleEl.addEventListener("change", ()=>rebuild());
 
 /* rosa ufficiale dell'alleanza precaricata nel file (fornita dall'utente) */
-const ROSTER_SEED_VERSION = "2026-08-05-full-2";   // bump per forzare l'aggiornamento della rosa salvata
+const ROSTER_SEED_VERSION = "2026-08-05-full-3";   // bump per forzare l'aggiornamento della rosa salvata
 const DEFAULT_ROSTER = [
   "Cpt Cockov","rebysa","Mattakkio","Nuclear Maximus","Diabolika","ShaniLotem","Blu BC",
   "Superbleub","Yosai","primilk","Loulou 1660","Commander Juni17","Khaleesi Vezhof","NurTon",
   "Marcdenhollander","DROX37","ShyGuy0884","markmis","yuki09afll","Shrek317","Razeroth92",
-  "el angel de cuba","WalletWarriorPL","WittenRock","Cchris84","xPogo","Isidur lost ring",
+  "el angel de cuba","WalletWarriorPL","WittgenRock","Cchris84","xPogo","Isidur lost ring",
   "shayna49","Oneblink","earthtransit","NobAdi","Doux reve","rouffinland","xDannyC",
   "Ektopolakatekel","Jorgos55","ToutafaitThierry","I kick your dog","Realdomadrid","Endrju2205",
   "KomMemoJunior","Nico Diablo","Aczino mx","jacoWZL","Eltoto6","CABEW","07RAPTOR","ADGAR",
@@ -694,13 +694,16 @@ function buildPlayers(dets){
       const g=matched.get(d._rosterName); g.points.push(d.points); g.sources.add(d.source);
     } else unmatched.push(d);
   });
-  const out=[];
+  const matchedOut=[];
   matched.forEach((g,name)=>{
     const srcs=[...g.sources];
-    out.push({ name, points:bestPoints(g.points), source: srcs[0]+(srcs.length>1?` +${srcs.length-1}`:"") });
+    matchedOut.push({ name, points:bestPoints(g.points), source: srcs[0]+(srcs.length>1?` +${srcs.length-1}`:"") });
   });
-  mergeDetections(unmatched).forEach(p=>out.push(p));
-  return out.sort((a,b)=>b.points-a.points);
+  // consolidamento: una riga NON riconosciuta con gli stessi punti di una riconosciuta
+  // è una lettura sbagliata dello stesso giocatore (es. "reb" = "rebysa") → la scarto
+  const matchedPts=new Set(matchedOut.map(e=>e.points));
+  const unmatchedOut=mergeDetections(unmatched).filter(e=>!matchedPts.has(e.points));
+  return matchedOut.concat(unmatchedOut).sort((a,b)=>b.points-a.points);
 }
 
 /* Due gruppi si fondono SOLO se il nome normalizzato è identico.
