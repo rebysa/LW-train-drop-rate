@@ -332,8 +332,37 @@ myNameEl.addEventListener("blur",()=>{
 });
 mergeToggleEl.addEventListener("change", ()=>rebuild());
 
-/* rosa dell'alleanza: caricata/salvata nel browser */
-try{ rosterEl.value=localStorage.getItem("legx-roster")||""; }catch(_){}
+/* rosa ufficiale dell'alleanza precaricata nel file (fornita dall'utente) */
+const ROSTER_SEED_VERSION = "2026-08-05-full-2";   // bump per forzare l'aggiornamento della rosa salvata
+const DEFAULT_ROSTER = [
+  "Cpt Cockov","rebysa","Mattakkio","Nuclear Maximus","Diabolika","ShaniLotem","Blu BC",
+  "Superbleub","Yosai","primilk","Loulou 1660","Commander Juni17","Khaleesi Vezhof","NurTon",
+  "Marcdenhollander","DROX37","ShyGuy0884","markmis","yuki09afll","Shrek317","Razeroth92",
+  "el angel de cuba","WalletWarriorPL","WittenRock","Cchris84","xPogo","Isidur lost ring",
+  "shayna49","Oneblink","earthtransit","NobAdi","Doux reve","rouffinland","xDannyC",
+  "Ektopolakatekel","Jorgos55","ToutafaitThierry","I kick your dog","Realdomadrid","Endrju2205",
+  "KomMemoJunior","Nico Diablo","Aczino mx","jacoWZL","Eltoto6","CABEW","07RAPTOR","ADGAR",
+  "Mickdu85","bluge tourolf","Tayeoon","We wodporak","Botibo75","Dinobot888","Tutututucvg",
+  "Spede77","jiben94","soldato duro","Ray2597","NiklioN","Knbrg","Tink3r Z","BU 14","Nicole54321",
+  "Amount04","novato 123pms","R4H4N","PaddelPatte","Greenscreen1710","Em123451","Real CinC",
+  "Nathals","guigui 60","Tozzi Fan","MaryMary1985","Loup Garu","Knud80a","Lethal Venom","EsTu",
+  "Bookworm SK","TinkerZ","Molschie","2lou9lou","adibou44","High55","Jsoochi","Jouinn",
+  "Je s appelle groot","Li88","Kilfx","Captain Volbreit","Carab83ITA","manueil","seb268","Murat 33",
+  "Saxoninette","giants974","ISTXXX"
+].join("\n");
+
+/* rosa: usa quella salvata nel browser; se manca o è di una versione vecchia, riparte dal default ufficiale */
+try{
+  const saved=localStorage.getItem("legx-roster");
+  const seed=localStorage.getItem("legx-roster-seed");
+  if(saved===null || seed!==ROSTER_SEED_VERSION){
+    rosterEl.value = DEFAULT_ROSTER;
+    localStorage.setItem("legx-roster", DEFAULT_ROSTER);
+    localStorage.setItem("legx-roster-seed", ROSTER_SEED_VERSION);
+  } else {
+    rosterEl.value = saved;
+  }
+}catch(_){ rosterEl.value=DEFAULT_ROSTER; }
 rosterEl.addEventListener("blur",()=>{
   try{ localStorage.setItem("legx-roster", rosterEl.value); }catch(_){}
   rebuild();
@@ -629,11 +658,11 @@ function loadRoster(){
   roster=(rosterEl.value||"").split("\n").map(s=>s.trim()).filter(Boolean)
     .map(s=>({orig:s, key:normalizeKey(s)})).filter(r=>r.key);
 }
-/* Aggancia una lettura OCR al nome di rosa più vicino (entro soglia); altrimenti tiene il nome OCR */
-function snapToRoster(name){
-  if(!roster.length) return name;
+/* Restituisce il nome di rosa più vicino (entro soglia), oppure null se non c'è match affidabile */
+function rosterMatch(name){
+  if(!roster.length) return null;
   const k=normalizeKey(name);
-  if(!k) return name;
+  if(!k) return null;
   const exact=roster.find(r=>r.key===k);
   if(exact) return exact.orig;
   let best=null, bestD=Infinity;
@@ -642,7 +671,36 @@ function snapToRoster(name){
     const thr=Math.max(2, Math.round(best.key.length*0.34));   // tolleranza proporzionale alla lunghezza
     if(bestD<=thr) return best.orig;
   }
-  return name;   // nessun match affidabile → tieni il nome letto
+  return null;
+}
+
+/* Punti "migliori" tra più letture: il valore più frequente; a pari → il più alto */
+function bestPoints(arr){
+  const f=new Map(); arr.forEach(n=>f.set(n,(f.get(n)||0)+1));
+  let best=arr[0], bc=0;
+  f.forEach((c,n)=>{ if(c>bc||(c===bc&&n>best)){ best=n; bc=c; } });
+  return best;
+}
+
+/* Lista finale:
+   - giocatori RICONOSCIUTI in rosa → raggruppati per NOME DI ROSA (indipendente dai punti):
+     una sola riga anche se compaiono in più screenshot, nome sempre corretto, sorteggio equo
+   - non riconosciuti → merge classico per punteggio */
+function buildPlayers(dets){
+  const matched=new Map(), unmatched=[];
+  dets.forEach(d=>{
+    if(d._rosterName){
+      if(!matched.has(d._rosterName)) matched.set(d._rosterName,{points:[],sources:new Set()});
+      const g=matched.get(d._rosterName); g.points.push(d.points); g.sources.add(d.source);
+    } else unmatched.push(d);
+  });
+  const out=[];
+  matched.forEach((g,name)=>{
+    const srcs=[...g.sources];
+    out.push({ name, points:bestPoints(g.points), source: srcs[0]+(srcs.length>1?` +${srcs.length-1}`:"") });
+  });
+  mergeDetections(unmatched).forEach(p=>out.push(p));
+  return out.sort((a,b)=>b.points-a.points);
 }
 
 /* Due gruppi si fondono SOLO se il nome normalizzato è identico.
@@ -751,14 +809,18 @@ readBtn.addEventListener("click", async ()=>{
 /* Fonde le letture "tuo nome" in una riga sola, poi ricalcola l'ammissibilità */
 function rebuild(){
   loadRoster();
-  const canon = rawDets.map(d => ({ ...d, name: snapToRoster(canonicalizeName(d.name)) }));
+  const dets = rawDets.map(d=>{
+    const canon = canonicalizeName(d.name);
+    const m = rosterMatch(canon);
+    return { ...d, name: m || canon, _rosterName: m };   // nome corretto sulla rosa se riconosciuto
+  });
   let base;
   if(mergeToggleEl.checked){
-    base = mergeDetections(canon);                       // fusione sicura (per punteggio / nome identico)
+    base = buildPlayers(dets);                            // raggruppa per nome di rosa (no duplicati, sorteggio equo)
   } else {
     // niente fusione: mostra ogni lettura, togliendo solo i duplicati LETTERALI (nome+punti identici)
     const seen=new Set();
-    base = canon.filter(d=>{
+    base = dets.filter(d=>{
       const k=normalizeKey(d.name)+"|"+d.points;
       if(seen.has(k)) return false; seen.add(k); return true;
     }).map(d=>({ name:d.name, points:d.points, source:d.source }))
