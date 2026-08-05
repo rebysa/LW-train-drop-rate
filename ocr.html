@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Last War</title>
+<title>Last War — Estrazione [legX]</title>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&family=Share+Tech+Mono&display=swap" rel="stylesheet"/>
 <style>
@@ -17,6 +17,7 @@
     --accent: #38bdf8;
     --green:  #4ade80;
     --red:    #f87171;
+    --muted:  #4a6080;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -30,24 +31,26 @@
       repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(30,48,80,0.15) 40px);
   }
 
-  header { text-align: center; margin-bottom: 24px; }
+  header { text-align: center; margin-bottom: 20px; }
   header h1 {
-    font-size: 2rem; font-weight: 700; letter-spacing: 4px;
+    font-size: 1.7rem; font-weight: 700; letter-spacing: 3px;
     text-transform: uppercase; color: var(--accent);
     text-shadow: 0 0 24px rgba(56,189,248,0.55);
   }
-  header p { color: var(--silver); font-size: .85rem; letter-spacing: 2px; margin-top: 4px; }
+  header p { color: var(--silver); font-size: .82rem; letter-spacing: 2px; margin-top: 4px; }
+  header .credit { color: var(--muted); font-size: .72rem; letter-spacing: 1px; margin-top: 2px; }
+
+  .wrap-narrow { max-width: 500px; margin: 0 auto; }
 
   #imageInput { display: none; }
   .drop-zone {
-    max-width: 500px; margin: 0 auto 18px;
     border: 2px dashed var(--border); border-radius: 14px;
-    background: var(--panel); padding: 26px 20px; text-align: center;
-    transition: border-color .2s, background .2s;
+    background: var(--panel); padding: 24px 20px; text-align: center;
+    transition: border-color .2s, background .2s; margin-bottom: 16px;
   }
   .drop-zone.over { border-color: var(--accent); background: rgba(56,189,248,0.06); }
-  .drop-zone .icon { font-size: 2.2rem; display: block; margin-bottom: 8px; }
-  .drop-zone p { color: var(--silver); font-size: .95rem; margin-bottom: 12px; }
+  .drop-zone .icon { font-size: 2rem; display: block; margin-bottom: 6px; }
+  .drop-zone p { color: var(--silver); font-size: .92rem; margin-bottom: 12px; }
   .pick-btn {
     display: inline-block; padding: 9px 24px; border-radius: 8px;
     border: 2px solid var(--accent); color: var(--accent); background: transparent;
@@ -57,10 +60,33 @@
   }
   .pick-btn:active { background: var(--accent); color: #0a1628; }
 
-  #file-list {
-    display: none; max-width: 500px; margin: 0 auto 14px;
+  /* ── Range punti ── */
+  .range-box {
     background: var(--panel); border: 1px solid var(--border);
-    border-radius: 10px; overflow: hidden;
+    border-radius: 12px; padding: 14px 16px; margin-bottom: 16px;
+  }
+  .range-title {
+    font-size: .78rem; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--accent); margin-bottom: 10px; text-align: center;
+  }
+  .range-row { display: flex; gap: 12px; }
+  .range-field { flex: 1; }
+  .range-field label {
+    display: block; font-size: .72rem; letter-spacing: 1px;
+    color: var(--silver); margin-bottom: 4px; text-transform: uppercase;
+  }
+  .range-field input {
+    width: 100%; padding: 9px 10px; border-radius: 8px;
+    border: 1px solid var(--border); background: #0a1424; color: #e2eaf5;
+    font-family: 'Share Tech Mono', monospace; font-size: 1rem; text-align: right;
+    outline: none; transition: border-color .15s;
+  }
+  .range-field input:focus { border-color: var(--accent); }
+  .range-hint { font-size: .72rem; color: var(--muted); margin-top: 8px; text-align: center; letter-spacing: .5px; }
+
+  #file-list {
+    display: none; background: var(--panel); border: 1px solid var(--border);
+    border-radius: 10px; overflow: hidden; margin-bottom: 14px;
   }
   .file-item {
     display: flex; align-items: center; gap: 10px;
@@ -75,8 +101,8 @@
   .fi-error    { color: var(--red); }
 
   #prog-wrap {
-    display: none; max-width: 500px; margin: 0 auto 4px;
-    background: #111e35; border-radius: 8px; overflow: hidden; height: 8px;
+    display: none; background: #111e35; border-radius: 8px;
+    overflow: hidden; height: 8px; margin-bottom: 4px;
   }
   #prog-bar {
     height: 100%; width: 0%;
@@ -84,9 +110,8 @@
     transition: width .2s ease; border-radius: 8px;
   }
   #prog-label {
-    max-width: 500px; margin: 0 auto 10px;
     text-align: center; font-size: .78rem; color: var(--silver);
-    letter-spacing: 1px; min-height: 18px;
+    letter-spacing: 1px; min-height: 18px; margin-bottom: 10px;
   }
 
   .btn {
@@ -101,7 +126,7 @@
   }
   .btn:hover { opacity: .9; transform: translateY(-1px); }
   .btn:active { transform: none; }
-  .btn:disabled { background: #1e3050; color: #4a6080; box-shadow: none; cursor: not-allowed; transform: none; }
+  .btn:disabled { background: #1e3050; color: var(--muted); box-shadow: none; cursor: not-allowed; transform: none; }
 
   #status {
     text-align: center; min-height: 22px; margin-bottom: 14px;
@@ -126,37 +151,34 @@
   table { width: 100%; border-collapse: collapse; }
   thead tr { background: #111e35; }
   thead th {
-    padding: 11px 14px; font-size: .78rem; letter-spacing: 2px;
+    padding: 11px 12px; font-size: .74rem; letter-spacing: 1.5px;
     text-transform: uppercase; color: var(--accent);
     border-bottom: 1px solid var(--border);
   }
-  thead th:nth-child(1) { text-align: center; width: 36px; }
-  thead th:nth-child(2) { text-align: left; }
-  thead th:nth-child(3) { text-align: left; color: var(--silver); }
-  thead th:nth-child(4) { text-align: right; }
+  thead th.c-ok   { text-align: center; width: 44px; }
+  thead th.c-name { text-align: left; }
+  thead th.c-pts  { text-align: right; }
+  thead th.c-src  { text-align: left; color: var(--silver); width: 90px; }
 
   tbody tr {
     background: var(--panel); border-bottom: 1px solid var(--border);
     transition: background .15s; animation: rowIn .3s ease both;
   }
   tbody tr:last-child { border-bottom: none; }
+  tbody tr.excluded { opacity: .45; }
   tbody tr.winner {
     background: rgba(245,200,66,0.12) !important;
-    border: 1px solid rgba(245,200,66,0.4);
     box-shadow: 0 0 18px rgba(245,200,66,0.15) inset;
   }
   tbody tr.winner .name-input { color: var(--gold) !important; }
-
   @keyframes rowIn { from { opacity:0; transform:translateX(-8px); } to { opacity:1; transform:none; } }
 
-  td { padding: 8px 14px; }
-  .td-rank { text-align: center; font-family: 'Share Tech Mono', monospace; width: 36px; }
-  .td-name { font-weight: 700; font-size: 1rem; }
-  .td-src  { font-size: .8rem; color: var(--silver); max-width: 130px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .td-pts  { text-align: right; font-family: 'Share Tech Mono', monospace; color: var(--accent); white-space: nowrap; }
-  .rank-1 { color: var(--gold);   font-weight: 700; }
-  .rank-2 { color: var(--silver); font-weight: 700; }
-  .rank-3 { color: var(--bronze); font-weight: 700; }
+  td { padding: 8px 12px; vertical-align: middle; }
+  .td-ok  { text-align: center; font-size: 1.05rem; width: 44px; }
+  .td-src { font-size: .78rem; color: var(--silver); max-width: 90px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .td-pts { text-align: right; font-family: 'Share Tech Mono', monospace; color: var(--accent); white-space: nowrap; }
+  tr.excluded .td-pts { color: var(--muted); }
+  .pts-reason { display:block; font-size:.66rem; color: var(--red); letter-spacing:.5px; }
 
   .name-input {
     background: transparent; border: none;
@@ -164,23 +186,10 @@
     color: inherit; font-family: 'Rajdhani', sans-serif;
     font-size: 1rem; font-weight: 700; width: 100%;
     outline: none; padding: 2px 4px; border-radius: 4px;
-    transition: background .15s, border-color .15s, box-shadow .15s;
-    cursor: text;
+    transition: background .15s, border-color .15s, box-shadow .15s; cursor: text;
   }
-  .name-input:hover {
-    border-bottom-color: rgba(56,189,248,0.5);
-    background: rgba(56,189,248,0.05);
-  }
-  .name-input:focus {
-    border-bottom-color: var(--accent);
-    background: rgba(56,189,248,0.08);
-    box-shadow: 0 2px 0 rgba(56,189,248,0.25);
-  }
-  tbody tr.winner .name-input:focus {
-    border-bottom-color: var(--gold);
-    background: rgba(245,200,66,0.08);
-    box-shadow: 0 2px 0 rgba(245,200,66,0.25);
-  }
+  .name-input:hover { border-bottom-color: rgba(56,189,248,0.5); background: rgba(56,189,248,0.05); }
+  .name-input:focus { border-bottom-color: var(--accent); background: rgba(56,189,248,0.08); box-shadow: 0 2px 0 rgba(56,189,248,0.25); }
 
   .actions {
     display: none; max-width: 680px; margin: 12px auto 0;
@@ -195,6 +204,7 @@
   .btn-sm:hover { border-color: var(--accent); color: var(--accent); }
   .btn-sm.highlight { border-color: var(--gold); color: var(--gold); }
   .btn-sm.highlight:hover { background: rgba(245,200,66,0.08); }
+  .btn-sm:disabled { opacity: .4; cursor: not-allowed; }
 
   #winner-banner {
     display: none; max-width: 680px; margin: 14px auto 0;
@@ -211,29 +221,49 @@
 <body>
 
 <header>
-  <h1>⚔ [LegX] - Valhalla Gladiators</h1>
-  <p>OCR Multi-Pass · Multi-File · Estrazione Random</p>
-  <p>All rights reserved - rebysa</p>
+  <h1>⚔ [legX] Valhalla Gladiators</h1>
+  <p>Estrazione tra i membri dell'alleanza · OCR Last War</p>
+  <p class="credit">All rights reserved · rebysa</p>
 </header>
 
 <canvas id="canvas"></canvas>
 <input type="file" id="imageInput" accept="image/*" multiple/>
 
-<div class="drop-zone" id="dropZone">
-  <span class="icon">📷</span>
-  <p>Trascina uno o più screenshot qui</p>
-  <label for="imageInput" class="pick-btn">Scegli immagini</label>
-</div>
+<div class="wrap-narrow">
+  <div class="drop-zone" id="dropZone">
+    <span class="icon">📷</span>
+    <p>Trascina qui gli screenshot della classifica<br>(anche interi, non serve ritagliarli)</p>
+    <label for="imageInput" class="pick-btn">Scegli immagini</label>
+  </div>
 
-<div id="file-list"></div>
-<div id="prog-wrap"><div id="prog-bar"></div></div>
-<div id="prog-label"></div>
-<button class="btn" id="readBtn" disabled>Analizza Screenshot</button>
-<div id="status"></div>
+  <div class="range-box">
+    <div class="range-title">🎯 Range punti per partecipare</div>
+    <div class="range-row">
+      <div class="range-field">
+        <label for="minPts">Punti minimi</label>
+        <input type="text" id="minPts" inputmode="numeric" value="7.200.000"/>
+      </div>
+      <div class="range-field">
+        <label for="maxPts">Punti massimi</label>
+        <input type="text" id="maxPts" inputmode="numeric" value="10.000.000"/>
+      </div>
+    </div>
+    <div class="range-hint">Partecipa al sorteggio solo chi ha punti nell'intervallo. Lascia vuoto un campo per togliere quel limite.</div>
+  </div>
+
+  <div id="file-list"></div>
+  <div id="prog-wrap"><div id="prog-bar"></div></div>
+  <div id="prog-label"></div>
+  <button class="btn" id="readBtn" disabled>Analizza Screenshot</button>
+  <div id="status"></div>
+</div>
 
 <div class="tbl-wrap" id="tableWrap">
   <table>
-    <thead><tr><th>#</th><th>Giocatore</th><th>File</th><th>Punti</th></tr></thead>
+    <thead><tr>
+      <th class="c-ok">🎲</th><th class="c-name">Giocatore [legX]</th>
+      <th class="c-src">File</th><th class="c-pts">Punti</th>
+    </tr></thead>
     <tbody id="tableBody"></tbody>
   </table>
 </div>
@@ -257,13 +287,33 @@ const imageInput=$("imageInput"), readBtn=$("readBtn"), tableBody=$("tableBody")
       actions=$("actions"), copyBtn=$("copyBtn"), extractBtn=$("extractBtn"),
       resetBtn=$("resetBtn"), progWrap=$("prog-wrap"), progBar=$("prog-bar"),
       progLabel=$("prog-label"), fileListEl=$("file-list"), canvas=$("canvas"),
-      wbanner=$("winner-banner"), wname=$("wname"), wpts=$("wpts");
-const ctx2d = canvas.getContext("2d");
+      wbanner=$("winner-banner"), wname=$("wname"), wpts=$("wpts"),
+      minPtsEl=$("minPts"), maxPtsEl=$("maxPts");
+const ctx2d = canvas.getContext("2d", { willReadFrequently: true });
 
-const MEDALS = ["🥇","🥈","🥉"];
-let files=[], players=[], winnerIdx=-1;
+/* players: { name, points, source, eligible, reason } — solo membri [legX] */
+let files=[], players=[], winnerIdx=-1, ocrWorker=null, currentLabel="";
 
-/* ── Drag & drop ── */
+/* ══════════════════════════════════════════════════════
+   RANGE PUNTI (input formattati con separatore migliaia)
+   ══════════════════════════════════════════════════════ */
+function parseIntSafe(s){ const d=String(s).replace(/[^\d]/g,""); return d?parseInt(d,10):null; }
+function fmt(n){ return n.toLocaleString("it-IT"); }
+function formatRangeInput(el){
+  const n=parseIntSafe(el.value);
+  el.value = n===null ? "" : fmt(n);
+}
+[minPtsEl,maxPtsEl].forEach(el=>el.addEventListener("blur",()=>{ formatRangeInput(el); recomputeEligibility(); }));
+
+function getRange(){
+  const min=parseIntSafe(minPtsEl.value);
+  const max=parseIntSafe(maxPtsEl.value);
+  return { min: min===null?-Infinity:min, max: max===null?Infinity:max };
+}
+
+/* ══════════════════════════════════════════════════════
+   DRAG & DROP + FILE LIST
+   ══════════════════════════════════════════════════════ */
 dropZone.addEventListener("dragover",  e=>{ e.preventDefault(); dropZone.classList.add("over"); });
 dropZone.addEventListener("dragleave", ()=>dropZone.classList.remove("over"));
 dropZone.addEventListener("drop", e=>{
@@ -281,7 +331,6 @@ function addFiles(newFiles) {
   wbanner.style.display="none";
   setStatus("","");
 }
-
 function renderFileList() {
   if (!files.length){ fileListEl.style.display="none"; return; }
   fileListEl.style.display="block";
@@ -297,25 +346,19 @@ function setFileStatus(i,cls,text){
 }
 
 /* ══════════════════════════════════════════════════════
-   PRE-PROCESSING: genera UN blob per ogni filtro
-   (3 OCR separati, niente collage → niente duplicati)
+   PRE-PROCESSING immagine → 2 blob (2 filtri)
+   Le righe [legX] hanno testo scuro su sfondo chiaro:
+   grayscale+contrasto e soglia coprono bene i casi.
    ══════════════════════════════════════════════════════ */
-
 function loadImage(file){
-  return new Promise(resolve=>{
+  return new Promise((resolve,reject)=>{
+    const url=URL.createObjectURL(file);
     const img=new Image();
-    img.onload=()=>resolve(img);
-    img.src=URL.createObjectURL(file);
+    img.onload=()=>{ URL.revokeObjectURL(url); resolve(img); };   // niente memory leak
+    img.onerror=()=>{ URL.revokeObjectURL(url); reject(new Error("img load")); };
+    img.src=url;
   });
 }
-
-/* Applica una funzione pixel→pixel su un ImageData e restituisce un Blob PNG */
-function imageDataToBlob(id){
-  canvas.width=id.width; canvas.height=id.height;
-  ctx2d.putImageData(id,0,0);
-  return new Promise(r=>canvas.toBlob(r,"image/png"));
-}
-
 function applyFilter(srcId, fn){
   const dst=new ImageData(new Uint8ClampedArray(srcId.data), srcId.width, srcId.height);
   const d=dst.data;
@@ -325,283 +368,317 @@ function applyFilter(srcId, fn){
   }
   return dst;
 }
-
+function imageDataToBlob(id){
+  canvas.width=id.width; canvas.height=id.height;
+  ctx2d.putImageData(id,0,0);
+  return new Promise(r=>canvas.toBlob(r,"image/png"));
+}
 async function getFilteredBlobs(file){
   const img=await loadImage(file);
-  const W=img.width*2, H=img.height*2;
+  // upscale solo se piccola, con tetto per non saturare la RAM su mobile
+  const MAX_W=1800;
+  let scale = img.width<1000 ? 2 : 1;
+  if(img.width*scale>MAX_W) scale=MAX_W/img.width;
+  const W=Math.round(img.width*scale), H=Math.round(img.height*scale);
   canvas.width=W; canvas.height=H;
   ctx2d.drawImage(img,0,0,W,H);
   const src=ctx2d.getImageData(0,0,W,H);
 
-  /* Filtro 1 – Grayscale + contrasto standard
-     Ottimo per: testo nero/scuro su sfondo bianco/grigio chiaro */
-  const f1=applyFilter(src,(r,g,b)=>{
+  const f1=applyFilter(src,(r,g,b)=>{          // grayscale + contrasto
     let v=0.299*r+0.587*g+0.114*b;
     v=v>128?Math.min(255,v*1.45):Math.max(0,v*0.55);
     return [v,v,v];
   });
-
-  /* Filtro 2 – Soglia luminanza (threshold fisso a 155)
-     Ottimo per: testo scuro su sfondo colorato chiaro (giallo oro, rosa bronzo)
-     Sotto 155 → nero (testo), sopra → bianco (sfondo) */
-  const f2=applyFilter(src,(r,g,b)=>{
+  const f2=applyFilter(src,(r,g,b)=>{          // soglia luminanza
     const v=0.299*r+0.587*g+0.114*b;
     const t=v<155?0:255;
     return [t,t,t];
   });
-
-  /* Filtro 3 – Inversione + threshold
-     Ottimo per: testo chiaro su sfondo scuro (blu, grigio scuro) */
-  const f3=applyFilter(src,(r,g,b)=>{
-    const v=255-(0.299*r+0.587*g+0.114*b);
-    const t=v>110?255:0;
-    return [t,t,t];
-  });
-
-  return [
-    await imageDataToBlob(f1),
-    await imageDataToBlob(f2),
-    await imageDataToBlob(f3),
-  ];
+  return { W, H, blobs:[await imageDataToBlob(f1), await imageDataToBlob(f2)] };
 }
 
 /* ══════════════════════════════════════════════════════
-   OCR: 3 passate per file, risultati fusi con dedup fuzzy
+   OCR — un solo worker riusato (molto più veloce)
    ══════════════════════════════════════════════════════ */
-
-async function ocrBlob(blob, onProgress){
-  const r=await Tesseract.recognize(blob,"eng",{ logger:m=>{
-    if(m.status==="recognizing text") onProgress(m.progress);
-  }});
-  return r.data.text;
+async function getWorker(){
+  if(ocrWorker) return ocrWorker;
+  ocrWorker=await Tesseract.createWorker("eng", 1, {
+    logger:m=>{
+      if(m.status==="recognizing text"){
+        progBar.style.width=(m.progress*100).toFixed(0)+"%";
+        progLabel.textContent=currentLabel;
+      }
+    }
+  });
+  return ocrWorker;
+}
+async function terminateWorker(){
+  if(ocrWorker){ try{ await ocrWorker.terminate(); }catch(_){} ocrWorker=null; }
 }
 
+/* Estrae tutte le parole con bounding box, robusto tra le varianti dell'output v5 */
+function collectWords(data){
+  const out=[];
+  const push=w=>{
+    if(!w||!w.text||!w.bbox) return;
+    const {x0,y0,x1,y1}=w.bbox;
+    out.push({ text:w.text.trim(), x0,y0,x1,y1,
+      cx:(x0+x1)/2, cy:(y0+y1)/2, h:(y1-y0), conf:w.confidence??100 });
+  };
+  if(Array.isArray(data.words)&&data.words.length){ data.words.forEach(push); return out; }
+  (data.blocks||[]).forEach(b=>(b.paragraphs||[]).forEach(p=>(p.lines||[]).forEach(l=>(l.words||[]).forEach(push))));
+  return out;
+}
+
+/* ══════════════════════════════════════════════════════
+   ESTRAZIONE righe [legX] per coordinata
+   Layout card:  [rank] [avatar] [NOME] [tag] [PUNTI]
+   nome = riga sopra il tag ; punti = zona destra dello stesso card
+   ══════════════════════════════════════════════════════ */
+const TAG_LEGX = /(v[a4o]lh[a4]ll[a4]|gl[a4]d[il1]|leg\s*[x×])/i;   // Valhalla / Gladiators / legX (fuzzy)
+const TAG_ANY  = /(kingdom|kingdo|utd|valh|gladi|leg\s*x|alliance)/i;
+
+function looksLikePoints(t){ return /\d/.test(t) && (t.match(/\d/g)||[]).length>=2; }
+
+function extractLegxPlayers(words, W, source){
+  const found=[];
+  // parole-tag legX raggruppate per banda verticale
+  const tagWords=words.filter(w=>TAG_LEGX.test(w.text)&&w.conf>30);
+  if(!tagWords.length) return found;
+  tagWords.sort((a,b)=>a.cy-b.cy);
+
+  const groups=[];
+  tagWords.forEach(w=>{
+    const g=groups[groups.length-1];
+    if(g && Math.abs(w.cy-g.cy)<w.h*1.2){ g.items.push(w); g.cy=(g.cy+w.cy)/2; }
+    else groups.push({ cy:w.cy, items:[w] });
+  });
+
+  groups.forEach(g=>{
+    const tagY=g.cy, tagH=Math.max(...g.items.map(w=>w.h));
+
+    // NOME: parole in colonna centrale, riga appena sopra il tag
+    const nameWords=words.filter(w=>{
+      const fx=w.cx/W;
+      return fx>0.30 && fx<0.72 && w.conf>35 &&
+             w.cy < tagY-0.25*tagH && w.cy > tagY-2.4*tagH &&
+             !TAG_ANY.test(w.text);
+    }).sort((a,b)=>a.cx-b.cx);
+    const rawName=nameWords.map(w=>w.text).join(" ");
+    const name=cleanName(rawName);
+
+    // PUNTI: numeri nella zona destra, stessa fascia verticale del card
+    const ptsWords=words.filter(w=>{
+      const fx=w.cx/W;
+      return fx>0.66 && looksLikePoints(w.text) &&
+             w.cy > tagY-2.4*tagH && w.cy < tagY+1.2*tagH;
+    }).sort((a,b)=>a.cx-b.cx);
+    const digits=ptsWords.map(w=>w.text).join("").replace(/[^\d]/g,"");
+    const points=digits.length>=6 ? parseInt(digits,10) : NaN;
+
+    if(name && isValidName(name) && !isNaN(points))
+      found.push({ name, points, source });
+  });
+  return found;
+}
+
+/* Fallback testuale se l'OCR non restituisce bounding box */
+function extractLegxFromText(text, source){
+  const lines=text.split("\n").map(l=>l.trim()).filter(Boolean);
+  const out=[];
+  for(let i=0;i<lines.length;i++){
+    if(!TAG_LEGX.test(lines[i])) continue;
+    let name="";
+    for(let d=1;d<=3;d++){ const c=lines[i-d]; if(c&&isValidName(cleanName(c))&&!TAG_ANY.test(c)){ name=cleanName(c); break; } }
+    let points=NaN;
+    for(let d=-2;d<=3;d++){ const c=lines[i+d]||""; const dg=c.replace(/[^\d]/g,""); if(dg.length>=6){ points=parseInt(dg,10); break; } }
+    if(name&&!isNaN(points)) out.push({ name, points, source });
+  }
+  return out;
+}
+
+function cleanName(s){
+  return String(s)
+    .replace(/^\s*\d{1,3}\s+/,"")               // via il rank iniziale
+    .replace(/\bWAR\b/gi,"")                     // via il badge "WAR"
+    .replace(/[^a-zA-Z0-9 _\-.]/g,"")            // solo caratteri latini/base
+    .replace(/\s+/g," ").trim();
+}
+function isValidName(s){
+  if(!s||s.length<2) return false;
+  if(/^\d+$/.test(s)) return false;
+  return (s.match(/[a-zA-Z]/g)||[]).length>=2;
+}
+function normalizeKey(s){ return s.toLowerCase().replace(/[^a-z0-9]/g,""); }
+
+/* ══════════════════════════════════════════════════════
+   MERGE — voto di maggioranza sui punti (robusto agli errori OCR)
+   ══════════════════════════════════════════════════════ */
+function pickBest(arr){                          // stringa più frequente, tie → più lunga
+  const f=new Map();
+  arr.forEach(s=>f.set(s,(f.get(s)||0)+1));
+  let best=arr[0], bc=0;
+  f.forEach((c,s)=>{ if(c>bc||(c===bc&&s.length>best.length)){ best=s; bc=c; } });
+  return best;
+}
+function modeOrMax(nums){                         // numero più frequente, tie → più alto
+  const f=new Map();
+  nums.forEach(n=>f.set(n,(f.get(n)||0)+1));
+  let best=nums[0], bc=0;
+  f.forEach((c,n)=>{ if(c>bc||(c===bc&&n>best)){ best=n; bc=c; } });
+  return best;
+}
+function mergeDetections(dets){
+  const by=new Map();
+  dets.forEach(d=>{
+    const k=normalizeKey(d.name); if(!k) return;
+    if(!by.has(k)) by.set(k,{names:[],points:[],sources:new Set()});
+    const g=by.get(k); g.names.push(d.name); g.points.push(d.points); g.sources.add(d.source);
+  });
+  const out=[];
+  by.forEach(g=>out.push({
+    name: pickBest(g.names),
+    points: modeOrMax(g.points),
+    source: [...g.sources][0] + (g.sources.size>1?` +${g.sources.size-1}`:"")
+  }));
+  return out.sort((a,b)=>b.points-a.points);
+}
+
+/* ══════════════════════════════════════════════════════
+   FLUSSO PRINCIPALE
+   ══════════════════════════════════════════════════════ */
 readBtn.addEventListener("click", async ()=>{
   if(!files.length) return;
   readBtn.disabled=true;
   players=[]; winnerIdx=-1;
   tableWrap.style.display=actions.style.display="none";
-  wbanner.style.display="none";
-  progWrap.style.display="block";
+  wbanner.style.display="none"; progWrap.style.display="block";
 
-  const PASS_NAMES=["Filtro standard","Soglia colore","Filtro inverso"];
+  const worker=await getWorker();
+  const PASS=["Filtro standard","Soglia colore"];
+  const allDets=[];
 
   for(let i=0;i<files.length;i++){
     const f=files[i];
     setFileStatus(i,"fi-scanning","⏳ Processing…");
     setStatus(`<span class="spinner"></span> File ${i+1}/${files.length}: ${esc(f.name)}`,"");
-
     try{
-      const blobs=await getFilteredBlobs(f);
-      const allResults=[];   // raccoglie candidati da tutti e 3 i pass
-
+      const { W, blobs }=await getFilteredBlobs(f);
       for(let p=0;p<blobs.length;p++){
-        progBar.style.width="0%";
-        progLabel.textContent=`Pass ${p+1}/3 · ${PASS_NAMES[p]}`;
-        const text=await ocrBlob(blobs[p], prog=>{
-          // progress 0..1 mappato su terzo della barra
-          progBar.style.width=((p*33)+(prog*33)).toFixed(0)+"%";
-        });
-        console.log(`RAW OCR [${f.name}] pass ${p+1}:\n`,text);
-        const found=parseLeaderboard(text, f.name);
-        allResults.push(...found);
+        currentLabel=`File ${i+1}/${files.length} · Pass ${p+1}/${blobs.length} · ${PASS[p]}`;
+        progBar.style.width="0%"; progLabel.textContent=currentLabel;
+        const { data }=await worker.recognize(blobs[p], {}, { text:true, blocks:true });
+        const words=collectWords(data);
+        const dets = words.length ? extractLegxPlayers(words, W, f.name)
+                                  : extractLegxFromText(data.text||"", f.name);
+        console.log(`[${f.name}] pass ${p+1}: ${dets.length} legX →`, dets);
+        allDets.push(...dets);
       }
-
-      progBar.style.width="100%";
-      progLabel.textContent="";
-
-      // Fondi i 3 pass: per ogni punteggio unico scegli il nome migliore
-      const merged=mergeResults(allResults);
-      players.push(...merged);
-      setFileStatus(i,"fi-done",`✅ ${merged.length} trovati`);
-
-    } catch(err){
-      console.error(err);
-      progLabel.textContent="";
+      progBar.style.width="100%"; progLabel.textContent="";
+      const uniqInFile=new Set(allDets.filter(d=>d.source.startsWith(f.name)).map(d=>normalizeKey(d.name))).size;
+      setFileStatus(i,"fi-done",`✅ ${uniqInFile} [legX]`);
+    }catch(err){
+      console.error(err); progLabel.textContent="";
       setFileStatus(i,"fi-error","❌ Errore");
     }
   }
 
   progWrap.style.display="none";
+  await terminateWorker();
 
-  // Deduplica globale cross-file (stesso nome → punteggio più alto)
-  const map=new Map();
-  players.forEach(p=>{
-    const k=normalizeKey(p.name);
-    if(!map.has(k)||map.get(k).points<p.points) map.set(k,p);
-  });
-  players=[...map.values()].sort((a,b)=>b.points-a.points);
+  players=mergeDetections(allDets);
 
   if(!players.length){
-    setStatus("❌ Nessun giocatore trovato. Prova screenshot più nitidi.","error");
+    setStatus("❌ Nessun membro [legX] trovato. Prova screenshot più nitidi o verifica la console (F12).","error");
   } else {
-    renderTable(players);
-    setStatus(`✅ ${players.length} giocatori da ${files.length} file`,"ok");
+    recomputeEligibility();
     tableWrap.style.display="block";
     actions.style.display="flex";
   }
   readBtn.disabled=false;
 });
 
-/* ══════════════════════════════════════════════════════
-   MERGE dei 3 pass:
-   - Raggruppa per valore dei punti (chiave numerica)
-   - Per ogni gruppo scegli il nome con più occorrenze
-     o quello più lungo se c'è parità
-   ══════════════════════════════════════════════════════ */
-function mergeResults(list){
-  // Raggruppa per punti
-  const byPts=new Map();
-  list.forEach(p=>{
-    const k=p.points;
-    if(!byPts.has(k)) byPts.set(k,[]);
-    byPts.get(k).push(p.name);
+/* Ricalcola ammissibilità in base al range e ri-renderizza */
+function recomputeEligibility(){
+  if(!players.length) return;
+  const { min, max }=getRange();
+  players.forEach(p=>{
+    if(p.points<min){ p.eligible=false; p.reason="pochi punti"; }
+    else if(p.points>max){ p.eligible=false; p.reason="troppi punti"; }
+    else { p.eligible=true; p.reason=""; }
   });
-
-  const result=[];
-  byPts.forEach((names, pts)=>{
-    // Conta frequenza di ogni nome normalizzato
-    const freq=new Map();
-    names.forEach(n=>{
-      const k=normalizeKey(n);
-      freq.set(k,(freq.get(k)||{count:0,name:n}));
-      freq.get(k).count++;
-      // tieni il nome più lungo tra le varianti dello stesso gruppo
-      if(n.length>freq.get(k).name.length) freq.get(k).name=n;
-    });
-    // Scegli il gruppo con frequenza più alta (tie-break: nome più lungo)
-    let best=null;
-    freq.forEach(v=>{ if(!best||v.count>best.count||(v.count===best.count&&v.name.length>best.name.length)) best=v; });
-    if(best) result.push({ name:best.name, points:pts, source: list.find(p=>p.points===pts).source });
-  });
-
-  return result.sort((a,b)=>b.points-a.points);
+  const nOk=players.filter(p=>p.eligible).length;
+  renderTable(players, winnerIdx);
+  extractBtn.disabled = nOk===0;
+  setStatus(`✅ ${players.length} membri [legX] · ${nOk} ammissibili al sorteggio`, nOk?"ok":"error");
 }
 
-/* Chiave normalizzata per confronti fuzzy: lowercase, senza spazi e simboli */
-function normalizeKey(s){
-  return s.toLowerCase().replace(/[^a-z0-9]/g,"");
-}
-
-/* ══════════════════════════════════════════════════════
-   PARSER
-   ══════════════════════════════════════════════════════ */
-const SKIP=/gladiators|alliance|legion|valhalla|legx|leaderboard|ranking|score|total|points/i;
-
-function isPointsLine(s){
-  const digits=(s.match(/\d/g)||[]).length;
-  const seps=(s.match(/[,. ]/g)||[]).length;
-  return digits>=5&&(digits+seps)/s.length>0.65;
-}
-function extractPoints(s){
-  const c=s.replace(/[^\d]/g,"");
-  return c.length>=5?parseInt(c,10):NaN;
-}
-function isValidName(s){
-  if(!s||s.length<2) return false;
-  if(/^\d{1,3}$/.test(s)) return false;
-  if(isPointsLine(s)) return false;
-  if(SKIP.test(s)) return false;
-  return (s.match(/[a-zA-Z]/g)||[]).length>=2;
-}
-function cleanName(s){
-  return s.replace(/[^a-zA-Z0-9 _\-\.]/g,"").replace(/\s+/g," ").trim();
-}
-
-function parseLeaderboard(text, sourceName){
-  const lines=text.split("\n").map(l=>l.trim()).filter(Boolean);
-  const results=[], usedPts=new Set(), usedName=new Set();
-
-  for(let i=0;i<lines.length;i++){
-    if(!isPointsLine(lines[i])||usedPts.has(i)) continue;
-    const pts=extractPoints(lines[i]);
-    if(isNaN(pts)||pts<10000) continue;
-
-    const order=[];
-    for(let d=-1;d>=-6;d--) order.push(i+d);
-    for(let d=1;d<=6;d++)   order.push(i+d);
-
-    let name="";
-    for(const j of order){
-      if(j<0||j>=lines.length||usedName.has(j)||usedPts.has(j)) continue;
-      const c=lines[j];
-      if(/[\[\]]/.test(c)||SKIP.test(c)||!isValidName(c)) continue;
-      const cleaned=cleanName(c);
-      if(cleaned.length<2) continue;
-      name=cleaned; usedName.add(j); break;
-    }
-
-    if(name){ results.push({name,points:pts,source:sourceName}); usedPts.add(i); }
-  }
-
-  results.sort((a,b)=>b.points-a.points);
-  const seen=new Set();
-  return results.filter(p=>{ const k=normalizeKey(p.name); if(seen.has(k))return false; seen.add(k);return true; });
-}
-
-/* ══════════════════════════════════════════════════════
-   RENDER tabella con nome editabile
-   ══════════════════════════════════════════════════════ */
 function renderTable(list, highlightIdx=-1){
   tableBody.innerHTML="";
   list.forEach((p,i)=>{
-    const rankCls=i<3?" rank-"+(i+1):"";
-    const medal=MEDALS[i]?MEDALS[i]+" ":"";
     const tr=document.createElement("tr");
-    tr.style.animationDelay=(i*40)+"ms";
+    tr.style.animationDelay=(i*30)+"ms";
+    if(!p.eligible) tr.classList.add("excluded");
     if(i===highlightIdx) tr.classList.add("winner");
 
-    const rTd=document.createElement("td");
-    rTd.className="td-rank"+rankCls; rTd.textContent=i+1;
+    const okTd=document.createElement("td");
+    okTd.className="td-ok"; okTd.textContent=p.eligible?"✅":"—";
+    okTd.title=p.eligible?"Partecipa":"Escluso: "+p.reason;
 
     const nTd=document.createElement("td"); nTd.className="td-name";
     const inp=document.createElement("input");
-    inp.type="text"; inp.className="name-input";
-    inp.value=medal+p.name;
+    inp.type="text"; inp.className="name-input"; inp.value=p.name;
     inp.setAttribute("spellcheck","false");
     inp.addEventListener("change",()=>{
-      const val=inp.value.replace(/^[🥇🥈🥉]\s*/,"").trim();
+      const val=inp.value.trim();
       if(val){ players[i].name=val; if(i===winnerIdx) wname.textContent="🏆 "+val; }
     });
     nTd.appendChild(inp);
 
     const sTd=document.createElement("td"); sTd.className="td-src"; sTd.textContent=p.source;
-    const pTd=document.createElement("td"); pTd.className="td-pts";
-    pTd.textContent=p.points.toLocaleString("it-IT");
 
-    tr.append(rTd,nTd,sTd,pTd);
+    const pTd=document.createElement("td"); pTd.className="td-pts";
+    pTd.innerHTML = fmt(p.points) + (p.eligible?"":`<span class="pts-reason">${p.reason}</span>`);
+
+    tr.append(okTd,nTd,sTd,pTd);
     tableBody.appendChild(tr);
   });
 }
 
-/* ── Estrazione random ── */
+/* ══════════════════════════════════════════════════════
+   ESTRAZIONE — solo tra gli ammissibili, puramente casuale
+   ══════════════════════════════════════════════════════ */
 extractBtn.addEventListener("click",()=>{
-  if(!players.length) return;
+  const eligibleIdx=players.map((p,i)=>p.eligible?i:-1).filter(i=>i>=0);
+  if(!eligibleIdx.length) return;
   let ticks=0;
   const iv=setInterval(()=>{
-    renderTable(players,Math.floor(Math.random()*players.length));
+    const flash=eligibleIdx[Math.floor(Math.random()*eligibleIdx.length)];
+    renderTable(players, flash);
     if(++ticks>=20){
       clearInterval(iv);
-      winnerIdx=Math.floor(Math.random()*players.length);
-      renderTable(players,winnerIdx);
+      winnerIdx=eligibleIdx[Math.floor(Math.random()*eligibleIdx.length)];
+      renderTable(players, winnerIdx);
       const w=players[winnerIdx];
       wname.textContent="🏆 "+w.name;
-      wpts.textContent=w.points.toLocaleString("it-IT")+" pt";
+      wpts.textContent=fmt(w.points)+" pt";
       wbanner.style.display="block";
       wbanner.scrollIntoView({behavior:"smooth",block:"nearest"});
     }
   },80);
 });
 
-resetBtn.addEventListener("click",()=>{
+resetBtn.addEventListener("click", async ()=>{
   files=[]; players=[]; winnerIdx=-1;
   fileListEl.style.display=tableWrap.style.display=actions.style.display="none";
   wbanner.style.display="none"; readBtn.disabled=true; setStatus("","");
+  await terminateWorker();
 });
 
 copyBtn.addEventListener("click",()=>{
   if(!players.length) return;
-  const csv="Nome,Punti,File\n"+players.map(p=>`${p.name},${p.points},${p.source}`).join("\n");
+  const csv="Nome,Punti,Ammissibile,File\n"+players.map(p=>
+    `${p.name},${p.points},${p.eligible?"si":"no"},${p.source}`).join("\n");
   navigator.clipboard.writeText(csv).then(()=>{
     copyBtn.textContent="✅ Copiato!";
     setTimeout(()=>{ copyBtn.textContent="📋 Copia CSV"; },2000);
