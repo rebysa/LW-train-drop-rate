@@ -264,6 +264,14 @@
     <div class="range-hint">Tu compari in fondo a ogni screenshot, quindi verresti letto più volte. Scrivi qui il tuo nome in-game per apparire in una riga sola.</div>
   </div>
 
+  <div class="range-box">
+    <label style="display:flex; align-items:center; gap:9px; cursor:pointer; font-size:.9rem; color:#e2eaf5;">
+      <input type="checkbox" id="mergeToggle" checked style="width:18px; height:18px; accent-color:var(--accent);"/>
+      Unisci le letture doppie con lo stesso punteggio
+    </label>
+    <div class="range-hint">Lo stesso giocatore letto più volte (2 filtri × ogni screenshot) appare una volta sola. Non rimuove mai giocatori con punteggi diversi. Togli la spunta per vedere ogni singola lettura e revisionare a mano.</div>
+  </div>
+
   <div id="file-list"></div>
   <div id="prog-wrap"><div id="prog-bar"></div></div>
   <div id="prog-label"></div>
@@ -302,7 +310,7 @@ const imageInput=$("imageInput"), readBtn=$("readBtn"), tableBody=$("tableBody")
       resetBtn=$("resetBtn"), addBtn=$("addBtn"), progWrap=$("prog-wrap"), progBar=$("prog-bar"),
       progLabel=$("prog-label"), fileListEl=$("file-list"), canvas=$("canvas"),
       wbanner=$("winner-banner"), wname=$("wname"), wpts=$("wpts"),
-      minPtsEl=$("minPts"), maxPtsEl=$("maxPts"), myNameEl=$("myName");
+      minPtsEl=$("minPts"), maxPtsEl=$("maxPts"), myNameEl=$("myName"), mergeToggleEl=$("mergeToggle");
 const ctx2d = canvas.getContext("2d", { willReadFrequently: true });
 
 /* players: { name, points, source, eligible, reason } — solo membri [legX]
@@ -315,6 +323,7 @@ myNameEl.addEventListener("blur",()=>{
   try{ localStorage.setItem("legx-my-name", myNameEl.value.trim()); }catch(_){}
   rebuild();
 });
+mergeToggleEl.addEventListener("change", ()=>rebuild());
 
 /* ══════════════════════════════════════════════════════
    RANGE PUNTI (input formattati con separatore migliaia)
@@ -453,70 +462,61 @@ function collectWords(data){
 }
 
 /* ══════════════════════════════════════════════════════
-   ESTRAZIONE righe [legX] per coordinata
+   ESTRAZIONE per coordinata — ancorata sui PUNTI (non sul tag)
+   Ogni riga ha un numero grande a destra: quello è l'ancora, così
+   NESSUNA riga viene saltata anche se il tag "[legX]…" è letto male.
    Layout card:  [rank] [avatar] [NOME] [tag] [PUNTI]
-   nome = riga sopra il tag ; punti = zona destra dello stesso card
    ══════════════════════════════════════════════════════ */
-const TAG_LEGX = /(v[a4o]lh[a4]ll[a4]|gl[a4]d[il1]|leg\s*[x×])/i;   // Valhalla / Gladiators / legX (fuzzy)
-const TAG_ANY  = /(kingdom|kingdo|utd|valh|gladi|leg\s*x|alliance)/i;
-
-function looksLikePoints(t){ return /\d/.test(t) && (t.match(/\d/g)||[]).length>=2; }
+const TAG_ANY = /(kingdom|kingdo|utd|valh|gladi|leg\s*x|alliance)/i;  // testo dell'alleanza, da NON prendere come nome
 
 function extractLegxPlayers(words, W, source){
   const found=[];
-  // parole-tag legX raggruppate per banda verticale
-  const tagWords=words.filter(w=>TAG_LEGX.test(w.text)&&w.conf>30);
-  if(!tagWords.length) return found;
-  tagWords.sort((a,b)=>a.cy-b.cy);
+  // 1) parole-numero nella colonna destra = frammenti dei punti
+  const ptsWords=words.filter(w => w.cx/W>0.66 && /\d/.test(w.text) && w.conf>25);
+  if(!ptsWords.length) return found;
+  ptsWords.sort((a,b)=>a.cy-b.cy);
 
-  const groups=[];
-  tagWords.forEach(w=>{
-    const g=groups[groups.length-1];
-    if(g && Math.abs(w.cy-g.cy)<w.h*1.2){ g.items.push(w); g.cy=(g.cy+w.cy)/2; }
-    else groups.push({ cy:w.cy, items:[w] });
+  // 2) raggruppa i frammenti per riga (stessa banda verticale)
+  const rows=[];
+  ptsWords.forEach(w=>{
+    const r=rows[rows.length-1];
+    if(r && Math.abs(w.cy-r.cy)<w.h*1.1){ r.items.push(w); r.cy=(r.cy*(r.items.length-1)+w.cy)/r.items.length; r.h=Math.max(r.h,w.h); }
+    else rows.push({ cy:w.cy, h:w.h, items:[w] });
   });
 
-  groups.forEach(g=>{
-    const tagY=g.cy, tagH=Math.max(...g.items.map(w=>w.h));
+  // 3) per ogni riga: punti = cifre concatenate; nome = colonna centrale stessa banda
+  rows.forEach(r=>{
+    const digits=r.items.slice().sort((a,b)=>a.cx-b.cx).map(w=>w.text).join("").replace(/[^\d]/g,"");
+    const points=digits.length>=6 ? parseInt(digits,10) : NaN;
+    if(isNaN(points)) return;
 
-    // NOME: parole in colonna centrale, riga appena sopra il tag
     const nameWords=words.filter(w=>{
       const fx=w.cx/W;
-      return fx>0.30 && fx<0.72 && w.conf>35 &&
-             w.cy < tagY-0.25*tagH && w.cy > tagY-2.4*tagH &&
-             !TAG_ANY.test(w.text);
+      return fx>0.28 && fx<0.64 && w.conf>25 &&
+             w.cy < r.cy+0.4*r.h && w.cy > r.cy-2.0*r.h &&   // riga del nome (sopra il centro)
+             !TAG_ANY.test(w.text) && !/^\d+$/.test(w.text);
     }).sort((a,b)=>a.cx-b.cx);
-    const rawName=nameWords.map(w=>w.text).join(" ");
-    const name=cleanName(rawName);
-    const conf=nameWords.length ? nameWords.reduce((s,w)=>s+(w.conf||0),0)/nameWords.length : 0;
+    if(!nameWords.length) return;
+    const name=cleanName(nameWords.map(w=>w.text).join(" "));
+    const conf=nameWords.reduce((s,w)=>s+(w.conf||0),0)/nameWords.length;
 
-    // PUNTI: numeri nella zona destra, stessa fascia verticale del card
-    const ptsWords=words.filter(w=>{
-      const fx=w.cx/W;
-      return fx>0.66 && looksLikePoints(w.text) &&
-             w.cy > tagY-2.4*tagH && w.cy < tagY+1.2*tagH;
-    }).sort((a,b)=>a.cx-b.cx);
-    const digits=ptsWords.map(w=>w.text).join("").replace(/[^\d]/g,"");
-    const points=digits.length>=6 ? parseInt(digits,10) : NaN;
-
-    if(name && isValidName(name) && !isNaN(points))
-      found.push({ name, points, source, conf });
+    if(name && isValidName(name)) found.push({ name, points, source, conf });
   });
   return found;
 }
 
-/* Fallback testuale se l'OCR non restituisce bounding box */
+/* Fallback testuale se l'OCR non restituisce bounding box:
+   ogni riga con un numero ≥6 cifre è un giocatore; nome = resto della riga senza numeri/tag */
 function extractLegxFromText(text, source){
   const lines=text.split("\n").map(l=>l.trim()).filter(Boolean);
   const out=[];
-  for(let i=0;i<lines.length;i++){
-    if(!TAG_LEGX.test(lines[i])) continue;
-    let name="";
-    for(let d=1;d<=3;d++){ const c=lines[i-d]; if(c&&isValidName(cleanName(c))&&!TAG_ANY.test(c)){ name=cleanName(c); break; } }
-    let points=NaN;
-    for(let d=-2;d<=3;d++){ const c=lines[i+d]||""; const dg=c.replace(/[^\d]/g,""); if(dg.length>=6){ points=parseInt(dg,10); break; } }
-    if(name&&!isNaN(points)) out.push({ name, points, source, conf:0 });
-  }
+  lines.forEach(line=>{
+    const dg=line.replace(/[^\d]/g,"");
+    if(dg.length<6) return;
+    const points=parseInt(dg,10);
+    const name=cleanName(line.replace(TAG_ANY,"").replace(/[\d.,]/g,"").trim());
+    if(name && isValidName(name)) out.push({ name, points, source, conf:0 });
+  });
   return out;
 }
 
@@ -715,26 +715,41 @@ readBtn.addEventListener("click", async ()=>{
 /* Fonde le letture "tuo nome" in una riga sola, poi ricalcola l'ammissibilità */
 function rebuild(){
   const canon = rawDets.map(d => ({ ...d, name: canonicalizeName(d.name) }));
-  mergedPlayers = mergeDetections(canon).concat(manualPlayers);   // + righe aggiunte a mano
+  let base;
+  if(mergeToggleEl.checked){
+    base = mergeDetections(canon);                       // fusione sicura (per punteggio / nome identico)
+  } else {
+    // niente fusione: mostra ogni lettura, togliendo solo i duplicati LETTERALI (nome+punti identici)
+    const seen=new Set();
+    base = canon.filter(d=>{
+      const k=normalizeKey(d.name)+"|"+d.points;
+      if(seen.has(k)) return false; seen.add(k); return true;
+    }).map(d=>({ name:d.name, points:d.points, source:d.source }))
+      .sort((a,b)=>b.points-a.points);
+  }
+  mergedPlayers = base.concat(manualPlayers);            // + righe aggiunte a mano
   recomputeEligibility();
 }
 
 /* Ricalcola ammissibilità in base al range e ri-renderizza */
 function recomputeEligibility(){
   if(!mergedPlayers.length) return;
-  players = mergedPlayers.slice().sort((a,b)=>(b.points||0)-(a.points||0));
-  winnerIdx=-1; wbanner.style.display="none";
-
   const { min, max }=getRange();
-  players.forEach(p=>{
+  // ammissibilità su TUTTE le letture
+  mergedPlayers.forEach(p=>{
     if(p.points<min){ p.eligible=false; p.reason="pochi punti"; }
     else if(p.points>max){ p.eligible=false; p.reason="troppi punti"; }
     else { p.eligible=true; p.reason=""; }
   });
+  // in tabella SOLO chi rientra nel range (+ le righe aggiunte a mano, per poterle compilare)
+  players = mergedPlayers.filter(p=>p.eligible || p.manual).sort((a,b)=>(b.points||0)-(a.points||0));
+  winnerIdx=-1; wbanner.style.display="none";
+
   const nOk=players.filter(p=>p.eligible).length;
+  const nEsclusi=mergedPlayers.filter(p=>!p.manual && !p.eligible).length;
   renderTable(players, winnerIdx);
   extractBtn.disabled = nOk===0;
-  setStatus(`✅ ${players.length} membri [legX] · ${nOk} ammissibili al sorteggio`, nOk?"ok":"error");
+  setStatus(`✅ ${nOk} giocatori nel range · ${nEsclusi} esclusi (fuori range)`, nOk?"ok":"error");
 }
 
 function renderTable(list, highlightIdx=-1){
