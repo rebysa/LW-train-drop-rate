@@ -488,6 +488,7 @@ function extractLegxPlayers(words, W, source){
     }).sort((a,b)=>a.cx-b.cx);
     const rawName=nameWords.map(w=>w.text).join(" ");
     const name=cleanName(rawName);
+    const conf=nameWords.length ? nameWords.reduce((s,w)=>s+(w.conf||0),0)/nameWords.length : 0;
 
     // PUNTI: numeri nella zona destra, stessa fascia verticale del card
     const ptsWords=words.filter(w=>{
@@ -499,7 +500,7 @@ function extractLegxPlayers(words, W, source){
     const points=digits.length>=6 ? parseInt(digits,10) : NaN;
 
     if(name && isValidName(name) && !isNaN(points))
-      found.push({ name, points, source });
+      found.push({ name, points, source, conf });
   });
   return found;
 }
@@ -514,7 +515,7 @@ function extractLegxFromText(text, source){
     for(let d=1;d<=3;d++){ const c=lines[i-d]; if(c&&isValidName(cleanName(c))&&!TAG_ANY.test(c)){ name=cleanName(c); break; } }
     let points=NaN;
     for(let d=-2;d<=3;d++){ const c=lines[i+d]||""; const dg=c.replace(/[^\d]/g,""); if(dg.length>=6){ points=parseInt(dg,10); break; } }
-    if(name&&!isNaN(points)) out.push({ name, points, source });
+    if(name&&!isNaN(points)) out.push({ name, points, source, conf:0 });
   }
   return out;
 }
@@ -537,20 +538,29 @@ function normalizeKey(s){ return s.toLowerCase().replace(/[^a-z0-9]/g,""); }
 /* ══════════════════════════════════════════════════════
    MERGE — voto di maggioranza sui punti (robusto agli errori OCR)
    ══════════════════════════════════════════════════════ */
-/* Nome migliore: più frequente; a pari → meno parole (scarta prefissi-rumore "we ", "pe "); poi più lungo */
-function pickBest(arr){
-  const f=new Map();
-  arr.forEach(s=>f.set(s,(f.get(s)||0)+1));
-  const tokens=s=>s.trim().split(/\s+/).filter(Boolean).length;
-  let best=arr[0], bc=0;
-  f.forEach((c,s)=>{
-    if(c>bc){ best=s; bc=c; return; }
-    if(c===bc){
-      const ts=tokens(s), tb=tokens(best);
-      if(ts<tb || (ts===tb && s.length>best.length)){ best=s; bc=c; }
-    }
+/* Sceglie il nome da mostrare tra più letture.
+   Ordine: 1) più frequente → 2) confidenza OCR più alta → 3) meno parole (scarta "we "/"pe ")
+           → 4) più corto (meno lettere raddoppiate/caratteri spuri).
+   Accetta sia array di stringhe sia array di {name, conf}. */
+function pickBest(entries){
+  const byName=new Map();
+  entries.forEach(e=>{
+    const name = typeof e==="string" ? e : e.name;
+    const conf = typeof e==="string" ? 0 : (e.conf||0);
+    if(!byName.has(name)) byName.set(name,{name, count:0, conf:0});
+    const g=byName.get(name); g.count++; g.conf=Math.max(g.conf, conf);
   });
-  return best;
+  const tokens=s=>s.trim().split(/\s+/).filter(Boolean).length;
+  let best=null;
+  byName.forEach(g=>{
+    if(!best){ best=g; return; }
+    if(g.count!==best.count){ if(g.count>best.count) best=g; return; }
+    if(g.conf!==best.conf){ if(g.conf>best.conf) best=g; return; }
+    const tg=tokens(g.name), tb=tokens(best.name);
+    if(tg!==tb){ if(tg<tb) best=g; return; }
+    if(g.name.length<best.name.length) best=g;
+  });
+  return best ? best.name : "";
 }
 function modeOrMax(nums){                         // numero più frequente, tie → più alto
   const f=new Map();
@@ -599,11 +609,17 @@ function mergeDetections(dets){
   const byPts=new Map();
   dets.forEach(d=>{
     if(isNaN(d.points)) return;
-    if(!byPts.has(d.points)) byPts.set(d.points,{names:[],sources:new Set()});
-    const g=byPts.get(d.points); g.names.push(d.name); g.sources.add(d.source);
+    if(!byPts.has(d.points)) byPts.set(d.points,{entries:[],sources:new Set()});
+    const g=byPts.get(d.points);
+    g.entries.push({ name:d.name, conf:d.conf||0 });
+    g.sources.add(d.source);
   });
   let groups=[...byPts.entries()].map(([points,g])=>({
-    points, name:pickBest(g.names), support:g.names.length, sources:g.sources
+    points,
+    name: pickBest(g.entries),
+    conf: Math.max(0, ...g.entries.map(e=>e.conf)),
+    support: g.entries.length,
+    sources: g.sources
   }));
 
   // Fase 2 — fonde gruppi con nome quasi uguale (punti letti male)
@@ -615,12 +631,11 @@ function mergeDetections(dets){
     for(let j=i+1;j<groups.length;j++){
       if(!used[j] && sameNameExact(groups[i].name, groups[j].name)){ cluster.push(groups[j]); used[j]=true; }
     }
-    const names=cluster.flatMap(c=>Array(c.support).fill(c.name));
-    cluster.sort((a,b)=>b.support-a.support || b.points-a.points);
+    cluster.sort((a,b)=>b.support-a.support || b.conf-a.conf || b.points-a.points);
     const sources=new Set(); cluster.forEach(c=>c.sources.forEach(s=>sources.add(s)));
     out.push({
-      name: pickBest(names),
-      points: cluster[0].points,                 // gruppo con più conferme, a pari → punteggio più alto
+      name: cluster[0].name,
+      points: cluster[0].points,                 // gruppo con più conferme, a pari → confidenza/punteggio più alti
       source: [...sources][0] + (sources.size>1?` +${sources.size-1}`:"")
     });
   }
