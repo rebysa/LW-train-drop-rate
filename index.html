@@ -61,6 +61,9 @@
   .row b { font-weight: 700; color: #e2eaf5; }
   .row .pct { font-family: 'Share Tech Mono', monospace; color: var(--silver); }
   .row .each { font-size: .72rem; color: var(--muted); letter-spacing: .5px; }
+  .row.total { margin-top: 4px; border-top: 1px solid var(--border); border-bottom: none; }
+  .row.total b { color: var(--accent); text-transform: uppercase; font-size: .82rem; letter-spacing: 1px; }
+  .row.total .pct { color: var(--accent); }
 
   /* ── Zona estrazione ── */
   .draw {
@@ -101,6 +104,11 @@
   button.estrai:hover { opacity: .92; transform: translateY(-1px); }
   button.estrai:active { transform: none; }
   button.estrai:disabled { opacity: .55; cursor: not-allowed; transform: none; }
+
+  .btn-group { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 16px; }
+  .btn-group button.estrai { width: auto; margin: 0; padding: 13px 22px; font-size: 1rem; letter-spacing: 1px; }
+  button.estrai.secondary { background: transparent; border: 2px solid var(--border); color: var(--silver); box-shadow: none; }
+  button.estrai.secondary:hover { border-color: var(--accent); color: var(--accent); }
 
   /* ── Storico ── */
   .history {
@@ -163,8 +171,12 @@
       <div class="val" id="valVip">–</div>
     </div>
   </div>
-  <div class="explain" id="explain">Premi ESTRAI per assegnare il treno di oggi.</div>
-  <button class="estrai" id="estraiBtn">🎰 Estrai</button>
+  <div class="explain" id="explain">Premi Estrai per assegnare il treno di oggi.</div>
+  <div class="btn-group">
+    <button class="estrai secondary" id="btnTrain">🚆 Solo Conducente</button>
+    <button class="estrai" id="btnBoth">🎰 Entrambi</button>
+    <button class="estrai secondary" id="btnVip">👑 Solo VIP</button>
+  </div>
 </div>
 
 <div class="history" id="history">
@@ -209,15 +221,21 @@ function expandWeights(bands) {
 const wConducente = expandWeights(CONDUCENTE_BANDS);
 const wVip        = expandWeights(VIP_BANDS);
 
-/* Rende la tabella dalle bande (percentuali identiche all'originale) */
-function renderTable(el, bands) {
-  el.innerHTML = bands.map(b => {
+/* Rende la tabella dalle bande mostrando la probabilità reale (peso ÷ totale) */
+function renderTable(el, bands, total) {
+  const fmtPct = p => p.toLocaleString("it-IT", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const rows = bands.map(b => {
+    const pct = (b.w / total) * 100;
     const each = (b.count && b.count > 1) ? `<span class="each"> ciascuno</span>` : "";
-    return `<div class="row"><b>${b.pos}</b><span class="pct">${b.w}%${each}</span></div>`;
-  }).join("");
+    return `<div class="row"><b>${b.pos}</b><span class="pct">${fmtPct(pct)}%${each}</span></div>`;
+  });
+  rows.push(`<div class="row total"><b>Totale</b><span class="pct">100%</span></div>`);
+  el.innerHTML = rows.join("");
 }
-renderTable($("tableConducente"), CONDUCENTE_BANDS);
-renderTable($("tableVip"), VIP_BANDS);
+const totConducente = wConducente.reduce((a, b) => a + b, 0);
+const totVip        = wVip.reduce((a, b) => a + b, 0);
+renderTable($("tableConducente"), CONDUCENTE_BANDS, totConducente);
+renderTable($("tableVip"), VIP_BANDS, totVip);
 
 /* Estrazione pesata: ritorna la posizione (1-based) */
 function estraiNumero(pesi) {
@@ -231,8 +249,9 @@ function estraiNumero(pesi) {
    ESTRAZIONE con animazione a rullo + spiegazione + storico
    ══════════════════════════════════════════════════════ */
 const valTrain = $("valTrain"), valVip = $("valVip"),
-      explain = $("explain"), estraiBtn = $("estraiBtn"),
-      historyEl = $("history"), histList = $("histList");
+      explain = $("explain"), historyEl = $("history"), histList = $("histList"),
+      btnTrain = $("btnTrain"), btnVip = $("btnVip"), btnBoth = $("btnBoth");
+const allBtns = [btnTrain, btnVip, btnBoth];
 
 let history = [];
 try { history = JSON.parse(localStorage.getItem("legx-train-history") || "[]"); } catch (_) {}
@@ -240,35 +259,37 @@ renderHistory();
 
 function pulse(el){ el.classList.add("pulse"); setTimeout(()=>el.classList.remove("pulse"), 130); }
 
-function estrai() {
-  estraiBtn.disabled = true;
+/* mode: "train" | "vip" | "both" */
+function estrai(mode) {
+  allBtns.forEach(b => b.disabled = true);
   explain.textContent = "🎲 Estrazione in corso…";
 
-  const finalTrain = estraiNumero(wConducente);
-  const finalVip   = estraiNumero(wVip);
+  const doTrain = mode === "train" || mode === "both";
+  const doVip   = mode === "vip"   || mode === "both";
+  const finalTrain = doTrain ? estraiNumero(wConducente) : null;
+  const finalVip   = doVip   ? estraiNumero(wVip)        : null;
 
-  // fase "rullo": numeri casuali che girano, poi si fermano
+  // fase "rullo": solo i reel coinvolti girano, poi si fermano
   let ticks = 0;
   const iv = setInterval(() => {
-    valTrain.textContent = 1 + Math.floor(Math.random() * 30);
-    valVip.textContent   = 1 + Math.floor(Math.random() * 30);
-    pulse(valTrain); pulse(valVip);
+    if (doTrain) { valTrain.textContent = 1 + Math.floor(Math.random() * 30); pulse(valTrain); }
+    if (doVip)   { valVip.textContent   = 1 + Math.floor(Math.random() * 30); pulse(valVip); }
     if (++ticks >= 16) {
       clearInterval(iv);
-      valTrain.textContent = finalTrain;
-      valVip.textContent   = finalVip;
-      pulse(valTrain); pulse(valVip);
+      if (doTrain) { valTrain.textContent = finalTrain; pulse(valTrain); }
+      if (doVip)   { valVip.textContent   = finalVip;   pulse(valVip); }
       showResult(finalTrain, finalVip);
       pushHistory(finalTrain, finalVip);
-      estraiBtn.disabled = false;
+      allBtns.forEach(b => b.disabled = false);
     }
   }, 70);
 }
 
 function showResult(t, v) {
-  explain.innerHTML =
-    `Il treno va a chi è in posizione <b class="train">${t}</b> · ` +
-    `posto VIP alla posizione <b class="vip">${v}</b>.`;
+  const parts = [];
+  if (t != null) parts.push(`Il treno va a chi è in posizione <b class="train">${t}</b>`);
+  if (v != null) parts.push(`posto VIP alla posizione <b class="vip">${v}</b>`);
+  explain.innerHTML = parts.join(" · ") + ".";
 }
 
 function pushHistory(t, v) {
@@ -286,13 +307,15 @@ function renderHistory() {
   historyEl.style.display = "block";
   histList.innerHTML = history.map(h =>
     `<div class="hitem">
-       <span class="pair">🚆 <span class="t">${h.t}</span> &nbsp; 👑 <span class="v">${h.v}</span></span>
+       <span class="pair">🚆 <span class="t">${h.t ?? "–"}</span> &nbsp; 👑 <span class="v">${h.v ?? "–"}</span></span>
        <span class="time">${h.when}</span>
      </div>`
   ).join("");
 }
 
-estraiBtn.addEventListener("click", estrai);
+btnTrain.addEventListener("click", () => estrai("train"));
+btnVip.addEventListener("click",   () => estrai("vip"));
+btnBoth.addEventListener("click",  () => estrai("both"));
 $("clearHist").addEventListener("click", () => {
   history = [];
   try { localStorage.removeItem("legx-train-history"); } catch (_) {}
