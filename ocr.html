@@ -11,6 +11,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
 <meta name="apple-mobile-web-app-title" content="legX"/>
 
+
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&family=Share+Tech+Mono&display=swap" rel="stylesheet"/>
 <style>
@@ -340,10 +341,10 @@ myNameEl.addEventListener("blur",()=>{
 mergeToggleEl.addEventListener("change", ()=>rebuild());
 
 /* rosa ufficiale dell'alleanza precaricata nel file (fornita dall'utente) */
-const ROSTER_SEED_VERSION = "2026-08-05-full-3";   // bump per forzare l'aggiornamento della rosa salvata
+const ROSTER_SEED_VERSION = "2026-08-07-v4";   // bump per forzare l'aggiornamento della rosa salvata
 const DEFAULT_ROSTER = [
   "Cpt Cockov","rebysa","Mattakkio","Nuclear Maximus","Diabolika","ShaniLotem","Blu BC",
-  "Superbleub","Yosai","primilk","Loulou 1660","Commander Juni17","Khaleesi Vezhof","NurTon",
+  "Superbleub","Yosai","primilk","LouLou 1660","Commander Juni17","Khaleesi Vezhof","NurTon",
   "Marcdenhollander","DROX37","ShyGuy0884","markmis","yuki09afll","Shrek317","Razeroth92",
   "el angel de cuba","WalletWarriorPL","WittgenRock","Cchris84","xPogo","Isidur lost ring",
   "shayna49","Oneblink","earthtransit","NobAdi","Doux reve","rouffinland","xDannyC",
@@ -351,11 +352,11 @@ const DEFAULT_ROSTER = [
   "KomMemoJunior","Nico Diablo","Aczino mx","jacoWZL","Eltoto6","CABEW","07RAPTOR","ADGAR",
   "Mickdu85","bluge tourolf","Tayeoon","We wodporak","Botibo75","Dinobot888","Tutututucvg",
   "Spede77","jiben94","soldato duro","Ray2597","NiklioN","Knbrg","Tink3r Z","BU 14","Nicole54321",
-  "Amount04","novato 123pms","R4H4N","PaddelPatte","Greenscreen1710","Em123451","Real CinC",
+  "Amunt04","novato 123pms","R4H4N","PaddelPatte","Greenscreen1710","Em123451","Real CinC",
   "Nathals","guigui 60","Tozzi Fan","MaryMary1985","Loup Garu","Knud80a","Lethal Venom","EsTu",
-  "Bookworm SK","TinkerZ","Molschie","2lou9lou","adibou44","High55","Jsoochi","Jouinn",
-  "Je s appelle groot","Li88","Kilfx","Captain Volbreit","Carab83ITA","manueil","seb268","Murat 33",
-  "Saxoninette","giants974","ISTXXX"
+  "Bookworm SK","TinkerZ","Molschie","2lou9oul","adibou44","High55","Jsoochi","Jouinn",
+  "Je s appelle groot","Li88","Kilfx","Captain Vollbreit","Carab83ITA","maneuil","seb268","Murat 33",
+  "Saxoninette","giants974","ISTXXX","Elkej","Lastwarer","TheBlodyEagle","IngriDient Secret","Fredocox","Lisandro69","Myalii"
 ].join("\n");
 
 /* rosa: usa quella salvata nel browser; se manca o è di una versione vecchia, riparte dal default ufficiale */
