@@ -221,6 +221,19 @@
   .name-input:hover { border-bottom-color: rgba(56,189,248,0.5); background: rgba(56,189,248,0.05); }
   .name-input:focus { border-bottom-color: var(--accent); background: rgba(56,189,248,0.08); box-shadow: 0 2px 0 rgba(56,189,248,0.25); }
 
+  /* punti editabili su ogni riga — stesso look monospace/accent del testo statico di prima */
+  .pts-input {
+    background: transparent; border: none; border-bottom: 1px dashed transparent;
+    color: var(--accent); font-family: 'Share Tech Mono', monospace;
+    font-size: .95rem; width: 100%; text-align: right;
+    outline: none; padding: 2px 4px; border-radius: 4px; cursor: text;
+    transition: background .15s, border-color .15s, box-shadow .15s;
+  }
+  .pts-input:hover { border-bottom-color: rgba(56,189,248,0.5); background: rgba(56,189,248,0.05); }
+  .pts-input:focus { border-bottom-color: var(--accent); background: rgba(56,189,248,0.08); box-shadow: 0 2px 0 rgba(56,189,248,0.25); }
+  tr.excluded .pts-input { color: var(--muted); }
+  .pts-alt { display: block; font-size: .66rem; color: var(--gold); letter-spacing: .5px; margin-top: 2px; text-align: right; }
+
   .actions {
     display: none; max-width: 680px; margin: 12px auto 0;
     gap: 10px; justify-content: flex-end; flex-wrap: wrap;
@@ -342,7 +355,7 @@
 </div>
 
 <footer style="text-align:center; margin:40px auto 0; max-width:680px; color:var(--muted); font-size:.72rem; letter-spacing:1px; line-height:1.6;">
-  legX Estrazione · <strong style="color:var(--silver);">v2</strong> — cancella-riga · badge rosa ⚠ · RNG crittografico · vincitore persistente<br>
+  legX Estrazione · <strong style="color:var(--silver);">v3</strong> — cancella-riga · badge rosa ⚠ · punti modificabili · incertezza segnalata · RNG crittografico<br>
   rebysa 🌹 · All rights reserved
 </footer>
 
@@ -384,16 +397,16 @@ const ROSTER_SEED_VERSION = "2026-08-07-v4";   // bump per forzare l'aggiornamen
 const DEFAULT_ROSTER = [
   "Cpt Cockov","rebysa","Mattakkio","Nuclear Maximus","Diabolika","ShaniLotem","Blu BC",
   "Superbleub","Yosai","primilk","LouLou 1660","Commander Juni17","Khaleesi Vezhof","NurTon",
-  "Marcdenhollander","DROX37","ShyGuy0884","markmis","yuki09afll","Shrek317","Razeroth92"
-  ,"WalletWarriorPL","WittgenRock","Cchris84","xPogo","Isidur lost ring",
+  "Marcdenhollander","DROX37","ShyGuy0884","markmis","yuki09afll","Shrek317","Razeroth92",
+  "el angel de cuba","WalletWarriorPL","WittgenRock","Cchris84","xPogo","Isidur lost ring",
   "shayna49","Oneblink","earthtransit","NobAdi","Doux reve","rouffinland","xDannyC",
-  "Ektopolakatekel","Jorgos55","ToutafaitThierry","I kick your dog","Endrju2205",
+  "Ektopolakatekel","Jorgos55","ToutafaitThierry","I kick your dog","Realdomadrid","Endrju2205",
   "KomMemoJunior","Nico Diablo","Aczino mx","jacoWZL","Eltoto6","CABEW","07RAPTOR","ADGAR",
   "Mickdu85","bluge tourolf","Tayeoon","We wodporak","Botibo75","Dinobot888","Tutututucvg",
-  "Spede77","jiben94","soldato duro","Ray2597","NiklioN","Knbrg","BU 14","Nicole54321",
+  "Spede77","jiben94","soldato duro","Ray2597","NiklioN","Knbrg","Tink3r Z","BU 14","Nicole54321",
   "Amunt04","novato 123pms","R4H4N","PaddelPatte","Greenscreen1710","Em123451","Real CinC",
   "Nathals","guigui 60","Tozzi Fan","MaryMary1985","Loup Garu","Knud80a","Lethal Venom","EsTu",
-  "Bookworm SK","Molschie","2lou9oul","adibou44","High55","Jsoochi","Jouinn",
+  "Bookworm SK","TinkerZ","Molschie","2lou9oul","adibou44","High55","Jsoochi","Jouinn",
   "Je s appelle groot","Li88","Kilfx","Captain Vollbreit","Carab83ITA","maneuil","seb268","Murat 33",
   "Saxoninette","giants974","ISTXXX","Elkej","Lastwarer","TheBlodyEagle","IngriDient Secret","Fredocox","Lisandro69","Myalii"
 ].join("\n");
@@ -714,7 +727,15 @@ function buildPlayers(dets){
   const matchedOut=[];
   matched.forEach((g,name)=>{
     const srcs=[...g.sources];
-    matchedOut.push({ name, points:bestPoints(g.points), source: srcs[0]+(srcs.length>1?` +${srcs.length-1}`:""), inRoster:true });
+    const chosen=bestPoints(g.points);
+    const uniq=[...new Set(g.points)];
+    matchedOut.push({
+      name, points:chosen,
+      source: srcs[0]+(srcs.length>1?` +${srcs.length-1}`:""),
+      inRoster:true,
+      uncertain: uniq.length>1,                                   // letture di punti discordanti
+      altPoints: uniq.filter(v=>v!==chosen).sort((a,b)=>b-a)      // gli altri valori visti
+    });
   });
   const matchedPts=new Set(matchedOut.map(e=>e.points));
   const unmatchedOut=mergeDetections(unmatched).filter(e=>!matchedPts.has(e.points))
@@ -754,10 +775,13 @@ function mergeDetections(dets){
     }
     cluster.sort((a,b)=>b.support-a.support || b.conf-a.conf || b.points-a.points);
     const sources=new Set(); cluster.forEach(c=>c.sources.forEach(s=>sources.add(s)));
+    const clusterPts=[...new Set(cluster.map(c=>c.points))];
     out.push({
       name: cluster[0].name,
       points: cluster[0].points,
-      source: [...sources][0] + (sources.size>1?` +${sources.size-1}`:"")
+      source: [...sources][0] + (sources.size>1?` +${sources.size-1}`:""),
+      uncertain: clusterPts.length>1,                                      // stesso nome, punti diversi
+      altPoints: clusterPts.filter(v=>v!==cluster[0].points).sort((a,b)=>b-a)
     });
   }
   return out.sort((a,b)=>b.points-a.points);
@@ -905,15 +929,26 @@ function renderTable(list, highlightIdx=-1){
     nTd.appendChild(cell);
 
     const pTd=document.createElement("td"); pTd.className="td-pts";
-    if(p.manual){
-      const pin=document.createElement("input");
-      pin.type="text"; pin.inputMode="numeric"; pin.className="name-input";
-      pin.style.textAlign="right"; pin.placeholder="punti";
-      pin.value=p.points?fmt(p.points):"";
-      pin.addEventListener("change",()=>{ p.points=parseIntSafe(pin.value)||0; recomputeEligibility(); });
-      pTd.appendChild(pin);
-    } else {
-      pTd.innerHTML = fmt(p.points) + (p.eligible?"":`<span class="pts-reason">${esc(p.reason)}</span>`);
+    const pin=document.createElement("input");
+    pin.type="text"; pin.inputMode="numeric"; pin.className="pts-input";
+    pin.placeholder="punti";
+    pin.value = p.points ? fmt(p.points) : "";
+    pin.addEventListener("change",()=>{
+      p.points=parseIntSafe(pin.value)||0;
+      p.uncertain=false; p.altPoints=[];      // l'utente ha verificato/corretto → niente più flag
+      recomputeEligibility();
+    });
+    pTd.appendChild(pin);
+    if(p.uncertain && p.altPoints && p.altPoints.length){
+      const alt=document.createElement("span"); alt.className="pts-alt";
+      alt.textContent="~ letto anche "+p.altPoints.map(fmt).join(" / ");
+      alt.title="Le letture non concordano sul punteggio — verifica prima di estrarre";
+      pTd.appendChild(alt);
+    }
+    if(!p.eligible && p.reason){
+      const rs=document.createElement("span"); rs.className="pts-reason";
+      rs.textContent=p.reason;
+      pTd.appendChild(rs);
     }
 
     const dTd=document.createElement("td"); dTd.className="td-del";
