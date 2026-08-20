@@ -98,7 +98,21 @@
   }
   .excl:focus { border-color: var(--accent); }
   textarea.excl { resize: vertical; min-height: 90px; line-height: 1.4; }
+  textarea.excl[readonly] { opacity: .6; cursor: not-allowed; resize: none; }
   .range-hint { font-size: .72rem; color: var(--muted); margin-top: 8px; text-align: center; letter-spacing: .5px; }
+
+  /* Protezione rosa: gate a password (deterrente, non sicurezza vera — è un file statico) */
+  .roster-title-row { display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .lock-toggle {
+    background: transparent; border: 1px solid var(--border); color: var(--silver);
+    font-size: .8rem; padding: 2px 8px; border-radius: 6px; cursor: pointer;
+    line-height: 1.6; transition: border-color .2s, color .2s;
+  }
+  .lock-toggle:hover { border-color: var(--accent); color: var(--accent); }
+  .lock-toggle.unlocked { border-color: var(--green); color: var(--green); }
+  .unlock-panel { display: none; gap: 8px; margin-bottom: 10px; }
+  .unlock-panel input { flex: 1; }
+  .pwd-error { display: none; color: var(--red); font-size: .72rem; letter-spacing: .5px; text-align: center; margin-bottom: 8px; }
 
   #file-list {
     display: none; background: var(--panel); border: 1px solid var(--border);
@@ -334,9 +348,17 @@
   </div>
 
   <div class="range-box">
-    <div class="range-title">📋 Nomi dell'alleanza (uno per riga)</div>
-    <textarea id="roster" class="excl" rows="5" placeholder="Nuclear Maximus&#10;Kilfx&#10;Tink3r Z&#10;Saxoninette&#10;..." autocomplete="off" spellcheck="false"></textarea>
-    <div class="range-hint">Incolla qui i nomi esatti dei membri: il tool corregge le letture OCR sul nome giusto (es. "axoninette" → "Saxoninette"). I nomi non presenti in rosa vengono segnalati con ⚠ in tabella. Facoltativo ma molto consigliato. Salvato nel browser.</div>
+    <div class="range-title roster-title-row">
+      <span>📋 Nomi dell'alleanza (uno per riga)</span>
+      <button type="button" id="rosterLockToggle" class="lock-toggle" title="Sblocca per modificare">🔒</button>
+    </div>
+    <div class="unlock-panel" id="unlockPanel">
+      <input type="password" id="rosterPwdInput" class="excl" placeholder="Password" autocomplete="off"/>
+      <button type="button" id="rosterUnlockConfirm" class="pick-btn">Sblocca</button>
+    </div>
+    <div class="pwd-error" id="pwdError">Password errata</div>
+    <textarea id="roster" class="excl" rows="5" placeholder="Nuclear Maximus&#10;Kilfx&#10;Tink3r Z&#10;Saxoninette&#10;..." autocomplete="off" spellcheck="false" readonly></textarea>
+    <div class="range-hint">Incolla qui i nomi esatti dei membri: il tool corregge le letture OCR sul nome giusto (es. "axoninette" → "Saxoninette"). I nomi non presenti in rosa vengono segnalati con ⚠ in tabella. Facoltativo ma molto consigliato. Salvato nel browser. Protetta da password contro modifiche accidentali — 🔒 per sbloccare.</div>
   </div>
 
   <div id="file-list"></div>
@@ -372,7 +394,7 @@
 </div>
 
 <footer style="text-align:center; margin:40px auto 0; max-width:680px; color:var(--muted); font-size:.72rem; letter-spacing:1px; line-height:1.6;">
-  legX Estrazione · <strong style="color:var(--silver);">v3.2</strong> — layout tabella corretto su mobile (nomi/punti non più tagliati) · estrazione fluida · niente doppio-click · cancella-riga · badge rosa ⚠ · punti modificabili · incertezza segnalata · RNG crittografico<br>
+  legX Estrazione · <strong style="color:var(--silver);">v4</strong> — rosa protetta da password 🔒 · layout mobile corretto · estrazione fluida senza doppio-click · cancella-riga · badge rosa ⚠ · punti modificabili con incertezza segnalata · RNG crittografico<br>
   rebysa 🌹 · All rights reserved
 </footer>
 
@@ -384,7 +406,9 @@ const imageInput=$("imageInput"), readBtn=$("readBtn"), tableBody=$("tableBody")
       resetBtn=$("resetBtn"), addBtn=$("addBtn"), progWrap=$("prog-wrap"), progBar=$("prog-bar"),
       progLabel=$("prog-label"), fileListEl=$("file-list"), canvas=$("canvas"),
       wbanner=$("winner-banner"), wname=$("wname"), wpts=$("wpts"), wmeta=$("wmeta"), wclose=$("wclose"),
-      minPtsEl=$("minPts"), maxPtsEl=$("maxPts"), myNameEl=$("myName"), mergeToggleEl=$("mergeToggle"), rosterEl=$("roster");
+      minPtsEl=$("minPts"), maxPtsEl=$("maxPts"), myNameEl=$("myName"), mergeToggleEl=$("mergeToggle"), rosterEl=$("roster"),
+      rosterLockToggle=$("rosterLockToggle"), unlockPanel=$("unlockPanel"), pwdInput=$("rosterPwdInput"),
+      pwdError=$("pwdError"), unlockConfirm=$("rosterUnlockConfirm");
 const ctx2d = canvas.getContext("2d", { willReadFrequently: true });
 
 /* players: { name, points, source, eligible, reason, inRoster } — solo membri [legX]
@@ -444,6 +468,66 @@ rosterEl.addEventListener("blur",()=>{
   try{ localStorage.setItem("legx-roster", rosterEl.value); }catch(_){}
   rebuild();
 });
+
+/* ══════════════════════════════════════════════════════
+   PROTEZIONE ROSA — gate a password contro modifiche accidentali.
+   Hash non-crittografico (FNV-1a) apposta: crypto.subtle richiede un
+   contesto "sicuro" non garantito su file:// in tutti i browser, e qui
+   non serve sicurezza vera (file statico, leggibile da chiunque) — solo
+   scoraggiare chi non dovrebbe toccare la rosa. Sblocco valido per la
+   sessione del browser corrente (sessionStorage), poi richiede di nuovo
+   la password.
+   ══════════════════════════════════════════════════════ */
+const ROSTER_PASSWORD_HASH = "361d89d1";
+const ROSTER_UNLOCK_KEY = "legx-roster-unlocked";
+
+function fnv1aHash(str){
+  let h = 0x811c9dc5;
+  for(let i=0;i<str.length;i++){
+    h ^= str.charCodeAt(i);
+    h = Math.imul(h, 0x01000193);
+  }
+  return (h >>> 0).toString(16).padStart(8,"0");
+}
+
+function setRosterLocked(locked){
+  rosterEl.readOnly = locked;
+  rosterLockToggle.textContent = locked ? "🔒" : "🔓";
+  rosterLockToggle.title = locked ? "Sblocca per modificare" : "Blocca di nuovo";
+  rosterLockToggle.classList.toggle("unlocked", !locked);
+  unlockPanel.style.display = "none";
+  pwdError.style.display = "none";
+  pwdInput.value = "";
+}
+
+rosterLockToggle.addEventListener("click", ()=>{
+  if(!rosterEl.readOnly){                                  // era sbloccata → la riblocco
+    setRosterLocked(true);
+    try{ sessionStorage.removeItem(ROSTER_UNLOCK_KEY); }catch(_){}
+    return;
+  }
+  const showing = unlockPanel.style.display === "flex";
+  unlockPanel.style.display = showing ? "none" : "flex";
+  pwdError.style.display = "none";
+  if(!showing) pwdInput.focus();
+});
+
+function tryUnlockRoster(){
+  if(fnv1aHash(pwdInput.value) === ROSTER_PASSWORD_HASH){
+    setRosterLocked(false);
+    try{ sessionStorage.setItem(ROSTER_UNLOCK_KEY, "1"); }catch(_){}
+    rosterEl.focus();
+  } else {
+    pwdError.style.display = "block";
+    pwdInput.value = "";
+    pwdInput.focus();
+  }
+}
+unlockConfirm.addEventListener("click", tryUnlockRoster);
+pwdInput.addEventListener("keydown", e=>{ if(e.key==="Enter"){ e.preventDefault(); tryUnlockRoster(); } });
+
+try{ setRosterLocked(sessionStorage.getItem(ROSTER_UNLOCK_KEY) !== "1"); }
+catch(_){ setRosterLocked(true); }
 
 /* ══════════════════════════════════════════════════════
    RANGE PUNTI (input formattati con separatore migliaia)
