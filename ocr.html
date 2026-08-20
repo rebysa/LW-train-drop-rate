@@ -266,6 +266,23 @@
   .wpts   { font-family: 'Share Tech Mono', monospace; color: var(--accent); }
   .wmeta  { font-size: .72rem; color: var(--muted); letter-spacing: .5px; margin-top: 6px; }
 
+  /* Su schermi stretti le colonne fisse (✅/✕) + il padding di ogni cella si mangiavano
+     ~180px prima di mostrare un carattere, lasciando troppo poco spazio a nome e punti
+     (causa del testo tagliato segnalato su mobile). Qui si restringe tutto ciò che è
+     "struttura" per restituire quello spazio al contenuto — nessuna colonna rimossa. */
+  @media (max-width: 480px) {
+    thead th { padding: 9px 6px; }
+    thead th.c-ok  { width: 28px; }
+    thead th.c-del { width: 26px; }
+    td { padding: 7px 5px; }
+    .td-ok  { width: 28px; font-size: .95rem; }
+    .td-del { width: 26px; }
+    .del-btn { padding: 3px 4px; font-size: .85rem; }
+    .name-input, .pts-input { font-size: .88rem; }
+    .pts-alt, .pts-reason { font-size: .62rem; }
+    .badge-warn { font-size: .78rem; }
+  }
+
   #canvas { display: none; }
 </style>
 </head>
@@ -355,7 +372,7 @@
 </div>
 
 <footer style="text-align:center; margin:40px auto 0; max-width:680px; color:var(--muted); font-size:.72rem; letter-spacing:1px; line-height:1.6;">
-  legX Estrazione · <strong style="color:var(--silver);">v3</strong> — cancella-riga · badge rosa ⚠ · punti modificabili · incertezza segnalata · RNG crittografico<br>
+  legX Estrazione · <strong style="color:var(--silver);">v3.2</strong> — layout tabella corretto su mobile (nomi/punti non più tagliati) · estrazione fluida · niente doppio-click · cancella-riga · badge rosa ⚠ · punti modificabili · incertezza segnalata · RNG crittografico<br>
   rebysa 🌹 · All rights reserved
 </footer>
 
@@ -977,21 +994,32 @@ function saveWinner(name, pts, pool, ts){
   try{ localStorage.setItem("legx-last-winner", JSON.stringify({name, pts, pool, ts})); }catch(_){}
 }
 
+let drawTimer=null;
+/* sposta solo la classe .winner sulle righe già presenti — niente ricostruzione della tabella
+   (evita il "lampeggio a righe vuote" su mobile, causato dal riavvio dell'animazione d'ingresso) */
+function highlightRow(idx){
+  const trs=tableBody.children;
+  for(let i=0;i<trs.length;i++) trs[i].classList.toggle("winner", i===idx);
+}
+
 extractBtn.addEventListener("click",()=>{
+  if(drawTimer) return;                                       // estrazione già in corso → ignora click ripetuti
   const eligibleIdx=players.map((p,i)=>p.eligible?i:-1).filter(i=>i>=0);
   if(!eligibleIdx.length) return;
+  extractBtn.disabled=true;
   let ticks=0;
-  const iv=setInterval(()=>{
-    const flash=eligibleIdx[randInt(eligibleIdx.length)];
-    renderTable(players, flash);
+  drawTimer=setInterval(()=>{
+    highlightRow(eligibleIdx[randInt(eligibleIdx.length)]);   // solo evidenzia
     if(++ticks>=20){
-      clearInterval(iv);
+      clearInterval(drawTimer); drawTimer=null;
       winnerIdx=eligibleIdx[randInt(eligibleIdx.length)];
-      renderTable(players, winnerIdx);
       const w=players[winnerIdx];
+      if(!w){ extractBtn.disabled=false; return; }            // tabella svuotata nel frattempo (es. reset)
+      highlightRow(winnerIdx);
       const ts=Date.now();
       showWinner(w.name, w.points, eligibleIdx.length, ts, false);
       saveWinner(w.name, w.points, eligibleIdx.length, ts);
+      extractBtn.disabled=false;
     }
   },80);
 });
