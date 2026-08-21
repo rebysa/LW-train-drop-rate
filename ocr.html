@@ -433,7 +433,7 @@
 </div>
 
 <footer style="text-align:center; margin:40px auto 0; max-width:680px; color:var(--muted); font-size:.72rem; letter-spacing:1px; line-height:1.6;">
-  legX Estrazione · <strong style="color:var(--silver);">v4.8</strong> — 🌹 dedicata a rebysa nell'immagine vincitore · nome vincitore ridimensionato, credito più visibile · storico estrazioni 📜 · range punti salvato · rosa protetta da password 🔒 · layout mobile corretto · estrazione fluida senza doppio-click · cancella-riga · badge rosa ⚠ · punti modificabili con incertezza segnalata · RNG crittografico<br>
+  legX Estrazione · <strong style="color:var(--silver);">v4.9</strong> — immagine vincitore in formato foto (anteprima grande in chat) · 🌹 dedicata a rebysa · storico estrazioni 📜 · range punti salvato · rosa protetta da password 🔒 · layout mobile corretto · estrazione fluida senza doppio-click · cancella-riga · badge rosa ⚠ · punti modificabili con incertezza segnalata · RNG crittografico<br>
   rebysa 🌹 · All rights reserved
 </footer>
 
@@ -1158,6 +1158,14 @@ function fitFontSize(ctx,text,maxWidth,startSize,minSize,weight){
     if(ctx.measureText(text).width<=maxWidth) break;
     size-=2;
   }
+  // rete di sicurezza: se anche al minimo "estetico" il testo non entra (nome anomalo,
+  // scheda stretta), continua a restringere fino a un pavimento tecnico — meglio un
+  // testo piccolissimo che uno tagliato fuori dai bordi
+  while(size>8){
+    ctx.font=`${weight} ${size}px "Rajdhani", sans-serif`;
+    if(ctx.measureText(text).width<=maxWidth) break;
+    size-=2;
+  }
   return size;
 }
 async function downloadWinnerImage(){
@@ -1173,8 +1181,13 @@ async function downloadWinnerImage(){
   // non su margini indovinati: elimina lo spazio vuoto sproporzionato lamentato su
   // telefono, perché ogni riga occupa solo lo spazio che le serve davvero + un piccolo
   // respiro fisso. SCALE=2 → risoluzione raddoppiata, testo nitido anche ingrandito.
+  // Larghezza ridotta rispetto alle versioni precedenti (era 900): un formato meno
+  // "panoramico", più vicino a una foto normale (4:3), riceve un'anteprima grande nelle
+  // app di chat invece della miniatura ridotta riservata alle immagini molto larghe.
+  // TUTTE le righe (non solo il nome) sono auto-adattate alla larghezza: restringere la
+  // scheda non rischia più di tagliare il branding o le altre scritte a dimensione fissa.
   const SCALE=2;
-  const W=900*SCALE, pad=22*SCALE, edgeInset=22*SCALE;
+  const W=620*SCALE, pad=22*SCALE, edgeInset=22*SCALE;
   const mc=document.createElement("canvas").getContext("2d");
   function lineMetrics(text, font){
     mc.font=font;
@@ -1183,23 +1196,37 @@ async function downloadWinnerImage(){
     const desc=tm.actualBoundingBoxDescent || parseInt(font,10)*0.22;
     return { asc, desc };
   }
+  const textMaxWidth = W-pad*2-56*SCALE;
 
-  const brandFont=`700 ${26*SCALE}px "Rajdhani", sans-serif`;
-  const labelFont=`600 ${23*SCALE}px "Rajdhani", sans-serif`;
+  const brandText="⚔ [legX] VALHALLA GLADIATORS";
+  const brandSize=fitFontSize(mc,brandText,textMaxWidth,26*SCALE,14*SCALE,"700");
+  const brandFont=`700 ${brandSize}px "Rajdhani", sans-serif`;
+
+  const labelText="🎰 VINCITORE ESTRATTO";
+  const labelSize=fitFontSize(mc,labelText,textMaxWidth,23*SCALE,13*SCALE,"600");
+  const labelFont=`600 ${labelSize}px "Rajdhani", sans-serif`;
+
   const nameLabel="🏆 "+name;
-  const nameSize=fitFontSize(mc,nameLabel,W-pad*2-70*SCALE,82*SCALE,36*SCALE,"700");
+  const nameSize=fitFontSize(mc,nameLabel,textMaxWidth,82*SCALE,32*SCALE,"700");
   const nameFont=`700 ${nameSize}px "Rajdhani", sans-serif`;
-  const ptsFont=`700 ${42*SCALE}px "Share Tech Mono", monospace`;
+
+  const ptsText=fmt(pts)+" pt";
+  const ptsSize=fitFontSize(mc,ptsText,textMaxWidth,42*SCALE,22*SCALE,"700");
+  const ptsFont=`700 ${ptsSize}px "Share Tech Mono", monospace`;
+
   const dd=new Date(ts).toLocaleString("it-IT",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"});
   const metaText=`Sorteggio uniforme tra ${pool} ammissibili · ${dd}`;
-  const metaFont=`500 ${20*SCALE}px "Rajdhani", sans-serif`;
-  const footerText=`Estrazione effettuata da ${doneBy}`+(doneBy.toLowerCase()==="rebysa" ? " 🌹" : "");
-  const footerFont=`600 ${21*SCALE}px "Rajdhani", sans-serif`;
+  const metaSize=fitFontSize(mc,metaText,textMaxWidth,20*SCALE,11*SCALE,"500");
+  const metaFont=`500 ${metaSize}px "Rajdhani", sans-serif`;
 
-  const mBrand=lineMetrics("⚔ [legX] VALHALLA GLADIATORS", brandFont);
-  const mLabel=lineMetrics("🎰 VINCITORE ESTRATTO", labelFont);
+  const footerText=`Estrazione effettuata da ${doneBy}`+(doneBy.toLowerCase()==="rebysa" ? " 🌹" : "");
+  const footerSize=fitFontSize(mc,footerText,textMaxWidth,21*SCALE,12*SCALE,"600");
+  const footerFont=`600 ${footerSize}px "Rajdhani", sans-serif`;
+
+  const mBrand=lineMetrics(brandText, brandFont);
+  const mLabel=lineMetrics(labelText, labelFont);
   const mName=lineMetrics(nameLabel, nameFont);
-  const mPts=lineMetrics(fmt(pts)+" pt", ptsFont);
+  const mPts=lineMetrics(ptsText, ptsFont);
   const mMeta=lineMetrics(metaText, metaFont);
   const mFooter=doneBy ? lineMetrics(footerText, footerFont) : null;
 
@@ -1236,16 +1263,16 @@ async function downloadWinnerImage(){
   c.textAlign="center";
 
   c.fillStyle="#38bdf8"; c.font=brandFont;
-  c.fillText("⚔ [legX] VALHALLA GLADIATORS", W/2, yBrand);
+  c.fillText(brandText, W/2, yBrand);
 
   c.fillStyle="#a8b8d0"; c.font=labelFont;
-  c.fillText("🎰 VINCITORE ESTRATTO", W/2, yLabel);
+  c.fillText(labelText, W/2, yLabel);
 
   c.fillStyle="#f5c842"; c.font=nameFont;
   c.fillText(nameLabel, W/2, yName);
 
   c.fillStyle="#38bdf8"; c.font=ptsFont;
-  c.fillText(fmt(pts)+" pt", W/2, yPts);
+  c.fillText(ptsText, W/2, yPts);
 
   c.fillStyle="#4a6080"; c.font=metaFont;
   c.fillText(metaText, W/2, yMeta);
