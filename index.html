@@ -79,13 +79,13 @@
     border-radius: 18px; padding: 22px 18px;
   }
   .reels { display: flex; justify-content: center; gap: 22px; margin-bottom: 6px; flex-wrap: wrap; }
-  .reel { min-width: 130px; }
+  .reel { min-width: 150px; }
   .reel .lbl {
-    font-size: .8rem; letter-spacing: 1.5px; text-transform: uppercase;
-    color: var(--silver); margin-bottom: 4px;
+    font-size: 1.05rem; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--silver); margin-bottom: 6px;
   }
   .reel .val {
-    font-family: 'Share Tech Mono', monospace; font-size: 3.4rem; font-weight: 700;
+    font-family: 'Share Tech Mono', monospace; font-size: 4.4rem; font-weight: 700;
     line-height: 1; transition: transform .12s ease;
   }
   .reel.train .val  { color: var(--accent); text-shadow: 0 0 18px rgba(56,189,248,0.5); }
@@ -387,8 +387,8 @@ async function downloadResultImage() {
 
   const brandFont     = `700 ${26 * SCALE}px "Rajdhani", sans-serif`;
   const labelFont      = `600 ${20 * SCALE}px "Rajdhani", sans-serif`;
-  const reelLabelFont = `700 ${20 * SCALE}px "Rajdhani", sans-serif`;
-  const reelValFont   = `700 ${72 * SCALE}px "Share Tech Mono", monospace`;
+  const reelLabelFont = `700 ${26 * SCALE}px "Rajdhani", sans-serif`;
+  const reelValFont   = `700 ${94 * SCALE}px "Share Tech Mono", monospace`;
   const metaFont       = `500 ${20 * SCALE}px "Rajdhani", sans-serif`;
   const footerFont     = `600 ${18 * SCALE}px "Rajdhani", sans-serif`;
 
