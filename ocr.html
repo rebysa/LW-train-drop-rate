@@ -279,6 +279,35 @@
   .wname  { font-size: 1.6rem; font-weight: 700; color: var(--gold); margin: 4px 0; }
   .wpts   { font-family: 'Share Tech Mono', monospace; color: var(--accent); }
   .wmeta  { font-size: .72rem; color: var(--muted); letter-spacing: .5px; margin-top: 6px; }
+  .save-img-btn { margin-top: 14px; }
+
+  /* Storico vincitori — puro log, non tocca in alcun modo la logica del sorteggio */
+  .history-panel {
+    display: none; max-width: 680px; margin: 14px auto 0;
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 12px; padding: 14px 18px;
+  }
+  .history-header {
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: .8rem; letter-spacing: 1px; text-transform: uppercase;
+    color: var(--accent); margin-bottom: 10px;
+  }
+  .history-clear {
+    background: transparent; border: 1px solid var(--border); color: var(--muted);
+    font-size: .68rem; letter-spacing: .5px; text-transform: none;
+    padding: 4px 10px; border-radius: 6px; cursor: pointer; transition: border-color .2s, color .2s;
+  }
+  .history-clear:hover { border-color: var(--red); color: var(--red); }
+  #historyList { max-height: 260px; overflow-y: auto; }
+  .history-row {
+    display: flex; align-items: baseline; justify-content: space-between; gap: 10px;
+    padding: 8px 0; border-bottom: 1px solid var(--border); font-size: .88rem;
+  }
+  .history-row:last-child { border-bottom: none; }
+  .history-name { font-weight: 700; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .history-pts { font-family: 'Share Tech Mono', monospace; color: var(--accent); white-space: nowrap; }
+  .history-date { font-size: .68rem; color: var(--muted); white-space: nowrap; }
+  .history-empty { color: var(--muted); font-size: .85rem; text-align: center; padding: 12px 0; }
 
   /* Su schermi stretti le colonne fisse (✅/✕) + il padding di ogni cella si mangiavano
      ~180px prima di mostrare un carattere, lasciando troppo poco spazio a nome e punti
@@ -330,7 +359,7 @@
         <input type="text" id="maxPts" inputmode="numeric" value="10.000.000"/>
       </div>
     </div>
-    <div class="range-hint">Partecipa al sorteggio solo chi ha punti nell'intervallo. Lascia vuoto un campo per togliere quel limite.</div>
+    <div class="range-hint">Partecipa al sorteggio solo chi ha punti nell'intervallo. Lascia vuoto un campo per togliere quel limite. Salvato nel browser.</div>
   </div>
 
   <div class="range-box">
@@ -384,17 +413,27 @@
   <div class="wname" id="wname"></div>
   <div class="wpts"  id="wpts"></div>
   <div class="wmeta" id="wmeta"></div>
+  <button class="btn-sm save-img-btn" id="saveImgBtn">📸 Salva immagine</button>
 </div>
 
 <div class="actions" id="actions">
   <button class="btn-sm highlight" id="extractBtn">🎲 Estrai Vincitore</button>
   <button class="btn-sm" id="addBtn">➕ Aggiungi giocatore</button>
   <button class="btn-sm" id="copyBtn">📋 Copia CSV</button>
+  <button class="btn-sm" id="historyBtn">📜 Storico</button>
   <button class="btn-sm" id="resetBtn">🗑 Reset</button>
 </div>
 
+<div class="history-panel" id="historyPanel">
+  <div class="history-header">
+    <span>📜 Storico estrazioni</span>
+    <button type="button" class="history-clear" id="historyClearBtn">🗑 Cancella storico</button>
+  </div>
+  <div id="historyList"></div>
+</div>
+
 <footer style="text-align:center; margin:40px auto 0; max-width:680px; color:var(--muted); font-size:.72rem; letter-spacing:1px; line-height:1.6;">
-  legX Estrazione · <strong style="color:var(--silver);">v4</strong> — rosa protetta da password 🔒 · layout mobile corretto · estrazione fluida senza doppio-click · cancella-riga · badge rosa ⚠ · punti modificabili con incertezza segnalata · RNG crittografico<br>
+  legX Estrazione · <strong style="color:var(--silver);">v4.4</strong> — immagine vincitore rifinita (credito dinamico, spazi omogenei) · storico estrazioni 📜 · range punti salvato · rosa protetta da password 🔒 · layout mobile corretto · estrazione fluida senza doppio-click · cancella-riga · badge rosa ⚠ · punti modificabili con incertezza segnalata · RNG crittografico<br>
   rebysa 🌹 · All rights reserved
 </footer>
 
@@ -408,7 +447,9 @@ const imageInput=$("imageInput"), readBtn=$("readBtn"), tableBody=$("tableBody")
       wbanner=$("winner-banner"), wname=$("wname"), wpts=$("wpts"), wmeta=$("wmeta"), wclose=$("wclose"),
       minPtsEl=$("minPts"), maxPtsEl=$("maxPts"), myNameEl=$("myName"), mergeToggleEl=$("mergeToggle"), rosterEl=$("roster"),
       rosterLockToggle=$("rosterLockToggle"), unlockPanel=$("unlockPanel"), pwdInput=$("rosterPwdInput"),
-      pwdError=$("pwdError"), unlockConfirm=$("rosterUnlockConfirm");
+      pwdError=$("pwdError"), unlockConfirm=$("rosterUnlockConfirm"),
+      historyBtn=$("historyBtn"), historyPanel=$("historyPanel"), historyList=$("historyList"), historyClearBtn=$("historyClearBtn"),
+      saveImgBtn=$("saveImgBtn");
 const ctx2d = canvas.getContext("2d", { willReadFrequently: true });
 
 /* players: { name, points, source, eligible, reason, inRoster } — solo membri [legX]
@@ -538,7 +579,22 @@ function formatRangeInput(el){
   const n=parseIntSafe(el.value);
   el.value = n===null ? "" : fmt(n);
 }
-[minPtsEl,maxPtsEl].forEach(el=>el.addEventListener("blur",()=>{ formatRangeInput(el); recomputeEligibility(); }));
+
+/* Persistenza range: chiave assente (null) = campo mai toccato → resta il default HTML.
+   Chiave presente ma vuota ("") = svuotato di proposito ("nessun limite") → va rispettato,
+   non ripristinato al default. Da qui l'uso di "!== null" invece di un semplice truthy check. */
+const RANGE_STORAGE_KEYS = new Map([[minPtsEl,"legx-min-pts"], [maxPtsEl,"legx-max-pts"]]);
+RANGE_STORAGE_KEYS.forEach((key, el)=>{
+  try{
+    const saved = localStorage.getItem(key);
+    if(saved!==null) el.value = saved;
+  }catch(_){}
+});
+[minPtsEl,maxPtsEl].forEach(el=>el.addEventListener("blur",()=>{
+  formatRangeInput(el);
+  try{ localStorage.setItem(RANGE_STORAGE_KEYS.get(el), el.value); }catch(_){}
+  recomputeEligibility();
+}));
 
 function getRange(){
   const min=parseIntSafe(minPtsEl.value);
@@ -1066,7 +1122,9 @@ function renderTable(list, highlightIdx=-1){
 /* ══════════════════════════════════════════════════════
    ESTRAZIONE — solo tra gli ammissibili, uniforme (crypto)
    ══════════════════════════════════════════════════════ */
+let currentWinnerData=null;   // dati grezzi dell'ultimo vincitore mostrato, per l'esportazione immagine
 function showWinner(name, pts, pool, ts, restored){
+  currentWinnerData={name, pts, pool, ts};
   wname.textContent="🏆 "+name;
   wpts.textContent=fmt(pts)+" pt";
   const dd=new Date(ts).toLocaleString("it-IT",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"});
@@ -1074,9 +1132,158 @@ function showWinner(name, pts, pool, ts, restored){
   wbanner.style.display="block";
   if(!restored) wbanner.scrollIntoView({behavior:"smooth",block:"nearest"});
 }
-function saveWinner(name, pts, pool, ts){
-  try{ localStorage.setItem("legx-last-winner", JSON.stringify({name, pts, pool, ts})); }catch(_){}
+
+/* ══════════════════════════════════════════════════════
+   IMMAGINE DEL VINCITORE — disegnata a mano su <canvas>, non "fotografata"
+   dal DOM (niente html2canvas): zero dipendenze esterne, zero rischio che
+   il font Google non sia ancora caricato al momento dello scatto (bug
+   comune di html2canvas), funziona identica su ogni browser/dispositivo.
+   ══════════════════════════════════════════════════════ */
+function sanitizeFilename(s){
+  return String(s).replace(/[\\/:*?"<>|]+/g,"_").trim() || "vincitore";
 }
+function drawRoundedRect(ctx,x,y,w,h,r){
+  ctx.beginPath();
+  ctx.moveTo(x+r,y);
+  ctx.arcTo(x+w,y,x+w,y+h,r);
+  ctx.arcTo(x+w,y+h,x,y+h,r);
+  ctx.arcTo(x,y+h,x,y,r);
+  ctx.arcTo(x,y,x+w,y,r);
+  ctx.closePath();
+}
+function fitFontSize(ctx,text,maxWidth,startSize,minSize,weight){
+  let size=startSize;
+  while(size>minSize){
+    ctx.font=`${weight} ${size}px "Rajdhani", sans-serif`;
+    if(ctx.measureText(text).width<=maxWidth) break;
+    size-=2;
+  }
+  return size;
+}
+async function downloadWinnerImage(){
+  if(!currentWinnerData) return;
+  const { name, pts, pool, ts } = currentWinnerData;
+  try{ if(document.fonts && document.fonts.ready) await document.fonts.ready; }catch(_){}
+
+  // "chi ha condotto l'estrazione" = valore ATTUALE del campo "Il tuo nome" (non quello
+  // salvato al momento dell'estrazione): se lo cambi, la prossima immagine riflette il nuovo nome
+  const doneBy = (myNameEl.value||"").trim();
+
+  // layout calcolato in base al contenuto (footer incluso solo se c'è un nome) invece di
+  // un'altezza fissa, per non lasciare uno spazio vuoto sproporzionato in fondo
+  const W=1000, pad=28, inset=50;
+  const yBrand=pad+inset, yLabel=yBrand+42, yName=yLabel+95, yPts=yName+58, yMeta=yPts+48;
+  const yFooter = doneBy ? yMeta+56 : null;
+  const H = (yFooter!==null ? yFooter : yMeta) + inset + pad;
+
+  const cnv=document.createElement("canvas");
+  cnv.width=W; cnv.height=H;
+  const c=cnv.getContext("2d");
+
+  // sfondo
+  c.fillStyle="#090e1a"; c.fillRect(0,0,W,H);
+  const glow=c.createRadialGradient(W/2,H*0.32,20,W/2,H*0.32,W*0.6);
+  glow.addColorStop(0,"rgba(245,200,66,0.14)"); glow.addColorStop(1,"rgba(245,200,66,0)");
+  c.fillStyle=glow; c.fillRect(0,0,W,H);
+
+  // scheda
+  drawRoundedRect(c,pad,pad,W-pad*2,H-pad*2,20);
+  c.fillStyle="rgba(245,200,66,0.08)"; c.fill();
+  c.lineWidth=2; c.strokeStyle="rgba(245,200,66,0.4)"; c.stroke();
+
+  c.textAlign="center";
+
+  // branding
+  c.fillStyle="#38bdf8"; c.font='700 22px "Rajdhani", sans-serif';
+  c.fillText("⚔ [legX] VALHALLA GLADIATORS", W/2, yBrand);
+
+  // label
+  c.fillStyle="#a8b8d0"; c.font='600 20px "Rajdhani", sans-serif';
+  c.fillText("🎰 VINCITORE ESTRATTO", W/2, yLabel);
+
+  // nome (auto-fit) — stessa stringa misurata e disegnata, trofeo incluso, per non rischiare overflow
+  const nameLabel = "🏆 "+name;
+  const nameSize=fitFontSize(c,nameLabel,W-pad*2-60,64,28,"700");
+  c.fillStyle="#f5c842"; c.font=`700 ${nameSize}px "Rajdhani", sans-serif`;
+  c.fillText(nameLabel, W/2, yName);
+
+  // punti
+  c.fillStyle="#38bdf8"; c.font='700 34px "Share Tech Mono", monospace';
+  c.fillText(fmt(pts)+" pt", W/2, yPts);
+
+  // meta
+  const dd=new Date(ts).toLocaleString("it-IT",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"});
+  c.fillStyle="#4a6080"; c.font='500 18px "Rajdhani", sans-serif';
+  c.fillText(`Sorteggio uniforme tra ${pool} ammissibili · ${dd}`, W/2, yMeta);
+
+  // footer "estrazione effettuata da" — solo se il campo "Il tuo nome" è compilato
+  if(yFooter!==null){
+    c.strokeStyle="#1e3050"; c.lineWidth=1;
+    c.beginPath(); c.moveTo(pad+80, yMeta+28); c.lineTo(W-pad-80, yMeta+28); c.stroke();
+    c.fillStyle="#4a6080"; c.font='500 15px "Rajdhani", sans-serif';
+    c.fillText(`Estrazione effettuata da ${doneBy}`, W/2, yFooter);
+  }
+
+  const blob = await new Promise(resolve => cnv.toBlob(resolve, "image/png"));
+  if(!blob) return;
+  const url=URL.createObjectURL(blob);
+  const stamp=new Date(ts);
+  const pad2=n=>String(n).padStart(2,"0");
+  const fname=`legX-vincitore-${sanitizeFilename(name)}-${stamp.getFullYear()}${pad2(stamp.getMonth()+1)}${pad2(stamp.getDate())}-${pad2(stamp.getHours())}${pad2(stamp.getMinutes())}.png`;
+  const a=document.createElement("a");
+  a.href=url; a.download=fname;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url), 4000);
+}
+saveImgBtn.addEventListener("click", downloadWinnerImage);
+
+/* ══════════════════════════════════════════════════════
+   STORICO VINCITORI — puro registro, non influenza in alcun modo
+   l'ammissibilità o il sorteggio (che resta uniforme tra tutti gli
+   ammissibili di OGNI estrazione, senza escludere chi ha già vinto).
+   ══════════════════════════════════════════════════════ */
+const WINNER_HISTORY_KEY = "legx-winner-history";
+const WINNER_DISMISSED_KEY = "legx-winner-dismissed-ts";
+const WINNER_HISTORY_MAX = 100;   // tetto di sicurezza, non deve crescere all'infinito
+
+function loadWinnerHistory(){
+  try{ return JSON.parse(localStorage.getItem(WINNER_HISTORY_KEY) || "[]"); }
+  catch(_){ return []; }
+}
+function saveWinner(name, pts, pool, ts){
+  try{
+    const hist = loadWinnerHistory();
+    hist.push({name, pts, pool, ts});
+    while(hist.length > WINNER_HISTORY_MAX) hist.shift();
+    localStorage.setItem(WINNER_HISTORY_KEY, JSON.stringify(hist));
+  }catch(_){}
+  renderHistory();
+}
+function renderHistory(){
+  const hist = loadWinnerHistory().slice().reverse();   // più recenti in cima
+  if(!hist.length){
+    historyList.innerHTML = `<div class="history-empty">Nessuna estrazione ancora registrata.</div>`;
+    return;
+  }
+  historyList.innerHTML = hist.map(h=>{
+    const dd = new Date(h.ts).toLocaleString("it-IT",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"});
+    return `<div class="history-row">
+      <span class="history-name">🏆 ${esc(h.name)}</span>
+      <span class="history-pts">${fmt(h.pts)} pt</span>
+      <span class="history-date">${dd}</span>
+    </div>`;
+  }).join("");
+}
+historyBtn.addEventListener("click", ()=>{
+  const showing = historyPanel.style.display === "block";
+  historyPanel.style.display = showing ? "none" : "block";
+  if(!showing){ renderHistory(); historyPanel.scrollIntoView({behavior:"smooth", block:"nearest"}); }
+});
+historyClearBtn.addEventListener("click", ()=>{
+  if(!confirm("Cancellare tutto lo storico delle estrazioni passate? L'azione non è reversibile.")) return;
+  try{ localStorage.removeItem(WINNER_HISTORY_KEY); localStorage.removeItem(WINNER_DISMISSED_KEY); }catch(_){}
+  renderHistory();
+});
 
 let drawTimer=null;
 /* sposta solo la classe .winner sulle righe già presenti — niente ricostruzione della tabella
@@ -1119,13 +1326,17 @@ resetBtn.addEventListener("click", async ()=>{
   files=[]; rawDets=[]; mergedPlayers=[]; manualPlayers=[]; players=[]; winnerIdx=-1;
   fileListEl.style.display=tableWrap.style.display=actions.style.display="none";
   wbanner.style.display="none"; readBtn.disabled=true; setStatus("","");
-  try{ localStorage.removeItem("legx-last-winner"); }catch(_){}
+  historyPanel.style.display="none";                    // Reset pulisce la sessione corrente, non lo storico
   await terminateWorker();
 });
 
 wclose.addEventListener("click", ()=>{
   wbanner.style.display="none";
-  try{ localStorage.removeItem("legx-last-winner"); }catch(_){}
+  try{                                                   // "chiudi" = non ripresentarlo al prossimo refresh,
+    const hist = loadWinnerHistory();                     // ma la voce resta nello storico permanente
+    const last = hist[hist.length-1];
+    if(last) localStorage.setItem(WINNER_DISMISSED_KEY, String(last.ts));
+  }catch(_){}
 });
 
 copyBtn.addEventListener("click",()=>{
@@ -1138,10 +1349,23 @@ copyBtn.addEventListener("click",()=>{
   });
 });
 
-/* ripristina l'ultimo vincitore dopo un refresh accidentale */
+/* migrazione una tantum dal vecchio formato a singolo slot (v4.1 e precedenti) allo storico */
 try{
-  const lw=JSON.parse(localStorage.getItem("legx-last-winner")||"null");
-  if(lw && lw.name) showWinner(lw.name, lw.pts, lw.pool, lw.ts, true);
+  const old = localStorage.getItem("legx-last-winner");
+  if(old && loadWinnerHistory().length===0){
+    const parsed = JSON.parse(old);
+    if(parsed && parsed.name) saveWinner(parsed.name, parsed.pts, parsed.pool, parsed.ts);
+  }
+  localStorage.removeItem("legx-last-winner");
+}catch(_){}
+
+/* ripristina l'ultimo vincitore dopo un refresh accidentale — solo se non è già stato
+   chiuso esplicitamente con la ✕ (in quel caso resta comunque nello storico permanente) */
+try{
+  const hist = loadWinnerHistory();
+  const last = hist[hist.length-1];
+  const dismissedTs = localStorage.getItem(WINNER_DISMISSED_KEY);
+  if(last && String(last.ts) !== dismissedTs) showWinner(last.name, last.pts, last.pool, last.ts, true);
 }catch(_){}
 
 function setStatus(html,cls){ statusDiv.innerHTML=html; statusDiv.className=cls; }
