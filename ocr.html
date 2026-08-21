@@ -433,7 +433,7 @@
 </div>
 
 <footer style="text-align:center; margin:40px auto 0; max-width:680px; color:var(--muted); font-size:.72rem; letter-spacing:1px; line-height:1.6;">
-  legX Estrazione · <strong style="color:var(--silver);">v4.5</strong> — immagine vincitore ad alta risoluzione e proporzioni bilanciate (pc e telefono) · storico estrazioni 📜 · range punti salvato · rosa protetta da password 🔒 · layout mobile corretto · estrazione fluida senza doppio-click · cancella-riga · badge rosa ⚠ · punti modificabili con incertezza segnalata · RNG crittografico<br>
+  legX Estrazione · <strong style="color:var(--silver);">v4.6</strong> — immagine vincitore compatta, testo più grande, niente spazio vuoto · storico estrazioni 📜 · range punti salvato · rosa protetta da password 🔒 · layout mobile corretto · estrazione fluida senza doppio-click · cancella-riga · badge rosa ⚠ · punti modificabili con incertezza segnalata · RNG crittografico<br>
   rebysa 🌹 · All rights reserved
 </footer>
 
@@ -1169,15 +1169,54 @@ async function downloadWinnerImage(){
   // salvato al momento dell'estrazione): se lo cambi, la prossima immagine riflette il nuovo nome
   const doneBy = (myNameEl.value||"").trim();
 
-  // SCALE=2 → risoluzione raddoppiata (testo nitido anche se il telefono/l'app di chat
-  // ingrandisce l'immagine su schermi ad alta densità). Proporzioni meno "panoramiche"
-  // (900:H invece di 1000:H, più respiro verticale) così la scheda non si riduce a una
-  // striscia sottile con scritte minuscole quando viene compressa in un'anteprima stretta.
+  // Layout costruito sulle dimensioni REALI del testo (measureText con bounding box),
+  // non su margini indovinati: elimina lo spazio vuoto sproporzionato lamentato su
+  // telefono, perché ogni riga occupa solo lo spazio che le serve davvero + un piccolo
+  // respiro fisso. SCALE=2 → risoluzione raddoppiata, testo nitido anche ingrandito.
   const SCALE=2;
-  const W=900*SCALE, pad=32*SCALE, inset=70*SCALE;
-  const yBrand=pad+inset, yLabel=yBrand+48*SCALE, yName=yLabel+105*SCALE, yPts=yName+64*SCALE, yMeta=yPts+52*SCALE;
-  const yFooter = doneBy ? yMeta+60*SCALE : null;
-  const H = (yFooter!==null ? yFooter : yMeta) + inset + pad;
+  const W=900*SCALE, pad=22*SCALE, edgeInset=22*SCALE;
+  const mc=document.createElement("canvas").getContext("2d");
+  function lineMetrics(text, font){
+    mc.font=font;
+    const tm=mc.measureText(text);
+    const asc=tm.actualBoundingBoxAscent || parseInt(font,10)*0.78;
+    const desc=tm.actualBoundingBoxDescent || parseInt(font,10)*0.22;
+    return { asc, desc };
+  }
+
+  const brandFont=`700 ${26*SCALE}px "Rajdhani", sans-serif`;
+  const labelFont=`600 ${23*SCALE}px "Rajdhani", sans-serif`;
+  const nameLabel="🏆 "+name;
+  const nameSize=fitFontSize(mc,nameLabel,W-pad*2-70*SCALE,100*SCALE,40*SCALE,"700");
+  const nameFont=`700 ${nameSize}px "Rajdhani", sans-serif`;
+  const ptsFont=`700 ${42*SCALE}px "Share Tech Mono", monospace`;
+  const dd=new Date(ts).toLocaleString("it-IT",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"});
+  const metaText=`Sorteggio uniforme tra ${pool} ammissibili · ${dd}`;
+  const metaFont=`500 ${20*SCALE}px "Rajdhani", sans-serif`;
+  const footerText=`Estrazione effettuata da ${doneBy}`;
+  const footerFont=`500 ${17*SCALE}px "Rajdhani", sans-serif`;
+
+  const mBrand=lineMetrics("⚔ [legX] VALHALLA GLADIATORS", brandFont);
+  const mLabel=lineMetrics("🎰 VINCITORE ESTRATTO", labelFont);
+  const mName=lineMetrics(nameLabel, nameFont);
+  const mPts=lineMetrics(fmt(pts)+" pt", ptsFont);
+  const mMeta=lineMetrics(metaText, metaFont);
+  const mFooter=doneBy ? lineMetrics(footerText, footerFont) : null;
+
+  // avanzamento riga = discesa della riga precedente + un piccolo respiro fisso + salita della prossima
+  let y=pad+edgeInset+mBrand.asc;
+  const yBrand=y; y+=mBrand.desc+14*SCALE+mLabel.asc;
+  const yLabel=y; y+=mLabel.desc+22*SCALE+mName.asc;
+  const yName=y; y+=mName.desc+18*SCALE+mPts.asc;
+  const yPts=y; y+=mPts.desc+14*SCALE+mMeta.asc;
+  const yMeta=y; y+=mMeta.desc;
+  let yFooter=null, dividerY=null;
+  if(mFooter){
+    dividerY=y+16*SCALE;
+    y=dividerY+14*SCALE+mFooter.asc;
+    yFooter=y; y+=mFooter.desc;
+  }
+  const H=y+edgeInset+pad;
 
   const cnv=document.createElement("canvas");
   cnv.width=W; cnv.height=H;
@@ -1196,35 +1235,27 @@ async function downloadWinnerImage(){
 
   c.textAlign="center";
 
-  // branding
-  c.fillStyle="#38bdf8"; c.font=`700 ${22*SCALE}px "Rajdhani", sans-serif`;
+  c.fillStyle="#38bdf8"; c.font=brandFont;
   c.fillText("⚔ [legX] VALHALLA GLADIATORS", W/2, yBrand);
 
-  // label
-  c.fillStyle="#a8b8d0"; c.font=`600 ${20*SCALE}px "Rajdhani", sans-serif`;
+  c.fillStyle="#a8b8d0"; c.font=labelFont;
   c.fillText("🎰 VINCITORE ESTRATTO", W/2, yLabel);
 
-  // nome (auto-fit) — stessa stringa misurata e disegnata, trofeo incluso, per non rischiare overflow
-  const nameLabel = "🏆 "+name;
-  const nameSize=fitFontSize(c,nameLabel,W-pad*2-60*SCALE,64*SCALE,28*SCALE,"700");
-  c.fillStyle="#f5c842"; c.font=`700 ${nameSize}px "Rajdhani", sans-serif`;
+  c.fillStyle="#f5c842"; c.font=nameFont;
   c.fillText(nameLabel, W/2, yName);
 
-  // punti
-  c.fillStyle="#38bdf8"; c.font=`700 ${34*SCALE}px "Share Tech Mono", monospace`;
+  c.fillStyle="#38bdf8"; c.font=ptsFont;
   c.fillText(fmt(pts)+" pt", W/2, yPts);
 
-  // meta
-  const dd=new Date(ts).toLocaleString("it-IT",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"});
-  c.fillStyle="#4a6080"; c.font=`500 ${18*SCALE}px "Rajdhani", sans-serif`;
-  c.fillText(`Sorteggio uniforme tra ${pool} ammissibili · ${dd}`, W/2, yMeta);
+  c.fillStyle="#4a6080"; c.font=metaFont;
+  c.fillText(metaText, W/2, yMeta);
 
   // footer "estrazione effettuata da" — solo se il campo "Il tuo nome" è compilato
   if(yFooter!==null){
     c.strokeStyle="#1e3050"; c.lineWidth=1*SCALE;
-    c.beginPath(); c.moveTo(pad+80*SCALE, yMeta+28*SCALE); c.lineTo(W-pad-80*SCALE, yMeta+28*SCALE); c.stroke();
-    c.fillStyle="#4a6080"; c.font=`500 ${15*SCALE}px "Rajdhani", sans-serif`;
-    c.fillText(`Estrazione effettuata da ${doneBy}`, W/2, yFooter);
+    c.beginPath(); c.moveTo(pad+80*SCALE, dividerY); c.lineTo(W-pad-80*SCALE, dividerY); c.stroke();
+    c.fillStyle="#4a6080"; c.font=footerFont;
+    c.fillText(footerText, W/2, yFooter);
   }
 
   const blob = await new Promise(resolve => cnv.toBlob(resolve, "image/png"));
