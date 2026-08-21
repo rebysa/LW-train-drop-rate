@@ -433,7 +433,7 @@
 </div>
 
 <footer style="text-align:center; margin:40px auto 0; max-width:680px; color:var(--muted); font-size:.72rem; letter-spacing:1px; line-height:1.6;">
-  legX Estrazione · <strong style="color:var(--silver);">v4.6</strong> — immagine vincitore compatta, testo più grande, niente spazio vuoto · storico estrazioni 📜 · range punti salvato · rosa protetta da password 🔒 · layout mobile corretto · estrazione fluida senza doppio-click · cancella-riga · badge rosa ⚠ · punti modificabili con incertezza segnalata · RNG crittografico<br>
+  legX Estrazione · <strong style="color:var(--silver);">v4.8</strong> — 🌹 dedicata a rebysa nell'immagine vincitore · nome vincitore ridimensionato, credito più visibile · storico estrazioni 📜 · range punti salvato · rosa protetta da password 🔒 · layout mobile corretto · estrazione fluida senza doppio-click · cancella-riga · badge rosa ⚠ · punti modificabili con incertezza segnalata · RNG crittografico<br>
   rebysa 🌹 · All rights reserved
 </footer>
 
@@ -1187,14 +1187,14 @@ async function downloadWinnerImage(){
   const brandFont=`700 ${26*SCALE}px "Rajdhani", sans-serif`;
   const labelFont=`600 ${23*SCALE}px "Rajdhani", sans-serif`;
   const nameLabel="🏆 "+name;
-  const nameSize=fitFontSize(mc,nameLabel,W-pad*2-70*SCALE,100*SCALE,40*SCALE,"700");
+  const nameSize=fitFontSize(mc,nameLabel,W-pad*2-70*SCALE,82*SCALE,36*SCALE,"700");
   const nameFont=`700 ${nameSize}px "Rajdhani", sans-serif`;
   const ptsFont=`700 ${42*SCALE}px "Share Tech Mono", monospace`;
   const dd=new Date(ts).toLocaleString("it-IT",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"});
   const metaText=`Sorteggio uniforme tra ${pool} ammissibili · ${dd}`;
   const metaFont=`500 ${20*SCALE}px "Rajdhani", sans-serif`;
-  const footerText=`Estrazione effettuata da ${doneBy}`;
-  const footerFont=`500 ${17*SCALE}px "Rajdhani", sans-serif`;
+  const footerText=`Estrazione effettuata da ${doneBy}`+(doneBy.toLowerCase()==="rebysa" ? " 🌹" : "");
+  const footerFont=`600 ${21*SCALE}px "Rajdhani", sans-serif`;
 
   const mBrand=lineMetrics("⚔ [legX] VALHALLA GLADIATORS", brandFont);
   const mLabel=lineMetrics("🎰 VINCITORE ESTRATTO", labelFont);
@@ -1254,7 +1254,7 @@ async function downloadWinnerImage(){
   if(yFooter!==null){
     c.strokeStyle="#1e3050"; c.lineWidth=1*SCALE;
     c.beginPath(); c.moveTo(pad+80*SCALE, dividerY); c.lineTo(W-pad-80*SCALE, dividerY); c.stroke();
-    c.fillStyle="#4a6080"; c.font=footerFont;
+    c.fillStyle="#a8b8d0"; c.font=footerFont;
     c.fillText(footerText, W/2, yFooter);
   }
 
