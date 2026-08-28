@@ -158,7 +158,7 @@
 
 <header>
   <h1>🗡️ [legX] Valhalla Gladiators 🛡️</h1>
-  <p>Golden Train - Push Mode · Estrazione posizioni</p>
+  <p>Lucky Train · Estrazione posizioni</p>
 </header>
 
 <div class="container">
@@ -273,9 +273,11 @@ renderHistory();
 
 function pulse(el){ el.classList.add("pulse"); setTimeout(()=>el.classList.remove("pulse"), 130); }
 
-/* Ultimo risultato disponibile per l'export immagine — null finché non c'è
-   ancora stata un'estrazione completa in questa sessione di pagina */
-let currentResult = null;   // { train, vip, ts }
+/* Ultimo risultato disponibile per l'export immagine. Persiste per campo: se
+   estrai "solo VIP" dopo aver già estratto il conducente, il conducente non
+   viene azzerato — resta quello mostrato nel reel, esattamente come lo vedi
+   in pagina. ts=null finché non è stata fatta nessuna estrazione. */
+let currentResult = { train: null, vip: null, ts: null };
 
 /* mode: "train" | "vip" | "both" */
 function estrai(mode) {
@@ -305,11 +307,16 @@ function estrai(mode) {
 }
 
 function showResult(t, v) {
+  // aggiorna solo il/i campo/i appena estratto/i: l'altro mantiene l'ultimo
+  // valore noto (coerente col reel, che non viene mai azzerato da solo)
+  if (t != null) currentResult.train = t;
+  if (v != null) currentResult.vip = v;
+  currentResult.ts = Date.now();
+
   const parts = [];
-  if (t != null) parts.push(`Il treno va a chi è in posizione <b class="train">${t}</b>`);
-  if (v != null) parts.push(`posto VIP alla posizione <b class="vip">${v}</b>`);
+  if (currentResult.train != null) parts.push(`Il treno va a chi è in posizione <b class="train">${currentResult.train}</b>`);
+  if (currentResult.vip   != null) parts.push(`posto VIP alla posizione <b class="vip">${currentResult.vip}</b>`);
   explain.innerHTML = parts.join(" · ") + ".";
-  currentResult = { train: t, vip: v, ts: Date.now() };
   btnSaveImg.style.display = "";   // torna al display di default (inline-block da .btn-group button.estrai)
 }
 
@@ -366,7 +373,7 @@ function drawRoundedRect(ctx, x, y, w, h, r) {
 }
 
 async function downloadResultImage() {
-  if (!currentResult) return;
+  if (!currentResult.ts) return;   // nessuna estrazione fatta finora in questa pagina
   const { train, vip, ts } = currentResult;
   try { if (document.fonts && document.fonts.ready) await document.fonts.ready; } catch (_) {}
 
@@ -403,7 +410,7 @@ async function downloadResultImage() {
   if (vip   != null) cols.push({ label: "👑 VIP",          val: String(vip),   color: "#f5c842" });
 
   const mBrand     = lineMetrics("🗡️ [legX] Valhalla Gladiators", brandFont);
-  const mLabel     = lineMetrics("Golden Train - Push Mode · Estrazione posizioni", labelFont);
+  const mLabel     = lineMetrics("Lucky Train · Estrazione posizioni", labelFont);
   const mReelLabel = lineMetrics("🚆 Conducente", reelLabelFont);   // etichetta più lunga tra le due possibili
   const mReelVal   = lineMetrics("30", reelValFont);                // due cifre = altezza massima possibile
   const mMeta      = lineMetrics(metaText, metaFont);
@@ -442,7 +449,7 @@ async function downloadResultImage() {
   c.fillText("🗡️ [legX] Valhalla Gladiators", W / 2, yBrand);
 
   c.fillStyle = "#a8b8d0"; c.font = labelFont;
-  c.fillText("Golden Train - Push Mode · Estrazione posizioni", W / 2, yLabel);
+  c.fillText("Lucky Train · Estrazione posizioni", W / 2, yLabel);
 
   // reel(s): due colonne se entrambi presenti, una colonna centrata altrimenti
   if (cols.length === 2) {
