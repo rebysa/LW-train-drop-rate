@@ -158,7 +158,7 @@
 
 <header>
   <h1>🗡️ [legX] Valhalla Gladiators 🛡️</h1>
-  <p>Push Mode Train · Estrazione posizioni</p>
+  <p>Push Train · Estrazione posizioni</p>
 </header>
 
 <div class="container">
@@ -410,7 +410,7 @@ async function downloadResultImage() {
   if (vip   != null) cols.push({ label: "👑 VIP",          val: String(vip),   color: "#f5c842" });
 
   const mBrand     = lineMetrics("🗡️ [legX] Valhalla Gladiators", brandFont);
-  const mLabel     = lineMetrics("Lucky Train · Estrazione posizioni", labelFont);
+  const mLabel     = lineMetrics("Push Train · Estrazione posizioni", labelFont);
   const mReelLabel = lineMetrics("🚆 Conducente", reelLabelFont);   // etichetta più lunga tra le due possibili
   const mReelVal   = lineMetrics("30", reelValFont);                // due cifre = altezza massima possibile
   const mMeta      = lineMetrics(metaText, metaFont);
@@ -449,7 +449,7 @@ async function downloadResultImage() {
   c.fillText("🗡️ [legX] Valhalla Gladiators", W / 2, yBrand);
 
   c.fillStyle = "#a8b8d0"; c.font = labelFont;
-  c.fillText("Lucky Train · Estrazione posizioni", W / 2, yLabel);
+  c.fillText("Push Train · Estrazione posizioni", W / 2, yLabel);
 
   // reel(s): due colonne se entrambi presenti, una colonna centrata altrimenti
   if (cols.length === 2) {
